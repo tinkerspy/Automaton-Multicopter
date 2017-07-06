@@ -1,18 +1,13 @@
-#include <Automaton.h>
-#include "Atm_fc_motor.h"
-#include "Atm_fc_receiver.h"
-#include "Atm_fc_mixer.h"
-#include "Atm_mpu6050.h"
-#include "Atm_pid.h"
+#include <Automaton_Multicopter.h>
 
 enum CONTROLS { YAW, PITCH, ROLL, THROTTLE, AUX1, AUX2 };
 
 int pin_rx[] = { 23, 22, 21, 20 };
 int pin_motor[] = { 3, 4, 6, 9 };
 
-Atm_fc_receiver rx;
-Atm_fc_mixer mixer;
-Atm_fc_motor motor[4];
+Atm_mc_receiver rx;
+Atm_mc_mixer mixer;
+Atm_mc_esc motor[4];
 Atm_pid pid[4];
 Atm_mpu6050 mpu;
 
@@ -61,4 +56,3 @@ void setup() {
 void loop() {
   automaton.run();
 }
-
