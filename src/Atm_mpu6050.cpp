@@ -45,9 +45,7 @@ int Atm_mpu6050::event( int id ) {
     case EVT_TIMER:
       return timer.expired( this );
     case EVT_SAMPLE:
-      digitalWrite( 13, HIGH );    
       fifoCount = mpu6050.getFIFOCount(); 
-      digitalWrite( 13, LOW );    
       return fifoCount >= packetSize;
     case EVT_INITDONE:
       return 1;
