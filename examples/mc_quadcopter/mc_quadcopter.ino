@@ -40,8 +40,8 @@ void setup() {
   mpu.begin( 100 )
     .mapping( YAW, ROLL | mpu.REVERSE, PITCH )
     .angle( 45 ) 
-    .onChange( [] ( int idx, int value, int ypr ) {
-      pid[ypr].pv( value );
+    .onChange( [] ( int idx, int value, int axis ) {
+      pid[axis].pv( value );
     })
     .start();
 
