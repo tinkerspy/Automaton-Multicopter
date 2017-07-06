@@ -71,11 +71,7 @@ void Atm_mc_receiver::action( int id ) {
           if ( channel[pch].value > channel[pch].max && channel[pch].value < 2200 ) channel[pch].max = channel[pch].value;
           int v = translate( pch );
           if ( v != channel[pch].last_output ) {  
-            if ( connector[pch].mode_flags != atm_connector::MODE_NULL ) { // FIXME: is this needed???????
-              connector[pch].push( v, channel[pch].logical );
-            } else {
-              onchange.push( v, channel[pch].logical ); // Only if no specific connector match...                  
-            }
+            push( connectors, ON_CHANGE, channel[pch].logical, v, channel[pch].logical );
             channel[pch].last_output = v;
           }
         }        
@@ -252,30 +248,32 @@ int Atm_mc_receiver::state( void ) {
   return Machine::state();
 }
 
-Atm_mc_receiver& Atm_mc_receiver::onChange( uint8_t id ) {
-  connector[id].mode_flags = atm_connector::MODE_NULL;
+
+/*
+ * onChange() push connector variants ( slots 1, autostore 0, broadcast 0 )
+ */
+
+ Atm_mc_receiver& Atm_mc_receiver::onChange( Machine& machine, int event ) {
+  onPush( connectors, ON_CHANGE, 0, 3, 1, machine, event );
   return *this;
 }
 
-Atm_mc_receiver& Atm_mc_receiver::onChange( uint8_t id, atm_cb_push_t callback, int idx /* = 0 */ ) {
-  connector[id].set( callback, idx );
+Atm_mc_receiver& Atm_mc_receiver::onChange( atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_CHANGE, 0, 3, 1, callback, idx );
   return *this;
 }
 
-Atm_mc_receiver& Atm_mc_receiver::onChange( uint8_t id, Machine& machine, int event /* = 0 */ ) {
-  connector[id].set( &machine, event );
+Atm_mc_receiver& Atm_mc_receiver::onChange( int sub, Machine& machine, int event ) {
+  onPush( connectors, ON_CHANGE, sub, 3, 0, machine, event );
   return *this;
 }
 
-Atm_mc_receiver& Atm_mc_receiver::onChange( atm_cb_push_t callback, int idx /* = 0 */ ) {
-  onchange.set( callback, idx );
+Atm_mc_receiver& Atm_mc_receiver::onChange( int sub, atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_CHANGE, sub, 3, 0, callback, idx );
   return *this;
 }
 
-Atm_mc_receiver& Atm_mc_receiver::onChange( Machine& machine, int event /* = 0 */ ) {
-  onchange.set( &machine, event );
-  return *this;
-}
+
 
 
 /* Nothing customizable below this line                          

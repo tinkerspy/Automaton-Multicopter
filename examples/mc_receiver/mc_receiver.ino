@@ -1,5 +1,7 @@
 #include <Automaton_Multicopter.h>
 
+// Bijna lege TX batterij (~9.6V) kan vreemde resultaten geven (wegvallende channels)
+
 enum { YAW, PITCH, ROLL, THROTTLE };
 
 Atm_mc_receiver rx;
@@ -17,7 +19,13 @@ void setup() {
     .calibrate(    PITCH, 997, 1988 )
     .calibrate(     ROLL, 998, 1988 )
     .onChange( [] ( int idx, int value, int axis ) {  
-      Serial.print( "Receiver output " );
+      Serial.print( "Receiver output [YPR] " );
+      Serial.print( axis );
+      Serial.print( " => " );
+      Serial.println( value );
+    })
+    .onChange( THROTTLE, [] ( int idx, int value, int axis ) {  
+      Serial.print( "Receiver output [T] " );
       Serial.print( axis );
       Serial.print( " => " );
       Serial.println( value );

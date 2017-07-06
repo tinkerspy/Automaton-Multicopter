@@ -42,15 +42,19 @@ class Atm_mc_receiver: public Machine {
   int maximum( int lch );  
   Atm_mc_receiver& calibrate( int idx, int min, int max );
 
-  Atm_mc_receiver& onChange( uint8_t idx );  
-  Atm_mc_receiver& onChange( uint8_t id, atm_cb_push_t callback, int idx = 0 );
-  Atm_mc_receiver& onChange( uint8_t id, Machine& machine, int event = 0 );
-  Atm_mc_receiver& onChange( atm_cb_push_t callback, int idx = 0 );
   Atm_mc_receiver& onChange( Machine& machine, int event = 0 );
+  Atm_mc_receiver& onChange( atm_cb_push_t callback, int idx = 0 );
+  Atm_mc_receiver& onChange( int sub, Machine& machine, int event = 0 );
+  Atm_mc_receiver& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
+
+  
   Atm_mc_receiver& mapping( int pch0 = -1, int pch1 = -1, int pch2 = -1, int pch3 = -1, int pch4 = -1, int pch5 = -1 );
 
  private:
   enum { ENT_CHANGED }; // ACTIONS
+  enum { ON_CHANGE, CONN_MAX = CHANNELS }; // CONNECTORS
+  atm_connector connectors[CONN_MAX];
+
   int event( int id ); 
   void action( int id );
   int translate( int idx ); 
@@ -58,8 +62,6 @@ class Atm_mc_receiver: public Machine {
   static Atm_mc_receiver * instance;
   uint8_t volatile ppm_pulse_counter;
   uint32_t volatile ppm_last_pulse;
-  atm_connector connector[CHANNELS];
-  atm_connector onchange;
   uint8_t max_used_channel;
   int physical[CHANNELS];
   atm_timer_millis timer; // Wait for RC to stabilize
