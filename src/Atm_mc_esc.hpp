@@ -5,17 +5,17 @@
  
 #define PWM_50HZ_1000US 3277
 
-class Atm_fc_motor: public Machine {
+class Atm_mc_esc: public Machine {
 
  public:
  
   enum { IDLE }; // STATES
   enum { ELSE }; // EVENTS
-  Atm_fc_motor( void ) : Machine() {};
-  Atm_fc_motor& begin(  int p, int frequency = -1 ); // Stick to multiples of 50, max 400Hz (-1 use Servo library)
-  Atm_fc_motor& trace( Stream & stream );
-  Atm_fc_motor& trigger( int event );
-  Atm_fc_motor& speed( int v );
+  Atm_mc_esc( void ) : Machine() {};
+  Atm_mc_esc& begin(  int p, int frequency = -1 ); // Stick to multiples of 50, max 400Hz (-1 use Servo library)
+  Atm_mc_esc& trace( Stream & stream );
+  Atm_mc_esc& trigger( int event );
+  Atm_mc_esc& speed( int v );
   int speed( );
   int state( void );
   int motor_pin; 
@@ -36,7 +36,7 @@ Automaton::ATML::begin - Automaton Markup Language
 
 <?xml version="1.0" encoding="UTF-8"?>
 <machines>
-  <machine name="Atm_fc_motor">
+  <machine name="Atm_mc_esc">
     <states>
       <IDLE index="0" sleep="1">
       </IDLE>

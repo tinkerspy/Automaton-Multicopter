@@ -9,8 +9,9 @@
 
 // Bundled state machines (components)
 
-#include <Atm_fc_receiver.hpp>
-#include <Atm_fc_mixer.hpp>
-#include <Atm_fc_motor.hpp>
+#include <Automaton.h>
+#include <Atm_mc_receiver.hpp>
+#include <Atm_mc_mixer.hpp>
+#include <Atm_mc_esc.hpp>
 #include <Atm_mpu6050.hpp>
 #include <Atm_pid.hpp>

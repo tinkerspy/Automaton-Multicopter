@@ -1,13 +1,13 @@
-#include "Atm_fc_motor.hpp"
+#include "Atm_mc_esc.hpp"
 
 /* Add optional parameters for the state machine to begin()
  * Add extra initialization code
  */
 
- // Add mapping table for each channnel (1000 * 2 bytes = 2 Kb), pointer per channel (response curve)
- // Keep the state machine to allow ramping...! (motor_cur_speed -> motor_set_speed in stappen. (delta = motor_ramp)
-
-Atm_fc_motor& Atm_fc_motor::begin( int p, int frequency /* = 50 */ ) {
+// Uses the built-in hardware PWM on teensy
+ 
+ 
+Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
     /*          ON_ENTER    ON_LOOP  ON_EXIT  ELSE */
@@ -34,7 +34,7 @@ Atm_fc_motor& Atm_fc_motor::begin( int p, int frequency /* = 50 */ ) {
  * The code must return 1 to trigger the event
  */
 
-int Atm_fc_motor::event( int id ) {
+int Atm_mc_esc::event( int id ) {
   switch ( id ) {
   }
   return 0;
@@ -44,12 +44,12 @@ int Atm_fc_motor::event( int id ) {
  * This generates the 'output' for the state machine
  */
 
-void Atm_fc_motor::action( int id ) {
+void Atm_mc_esc::action( int id ) {
   switch ( id ) {
   }
 }
 
-Atm_fc_motor& Atm_fc_motor::speed( int v ) {
+Atm_mc_esc& Atm_mc_esc::speed( int v ) {
   motor_cur_speed = constrain( v, 0, 1000 );
   if ( servo_mode ) {
     servo.writeMicroseconds( map( motor_cur_speed, 0, 1000, 1000, 2000  ) );
@@ -59,7 +59,7 @@ Atm_fc_motor& Atm_fc_motor::speed( int v ) {
   return *this;
 }
 
-int Atm_fc_motor::speed() {
+int Atm_mc_esc::speed() {
   return motor_cur_speed;
 }
 
@@ -67,7 +67,7 @@ int Atm_fc_motor::speed() {
  * Control how your machine processes triggers
  */
 
-Atm_fc_motor& Atm_fc_motor::trigger( int event ) {
+Atm_mc_esc& Atm_mc_esc::trigger( int event ) {
   Machine::trigger( event );
   return *this;
 }
@@ -76,7 +76,7 @@ Atm_fc_motor& Atm_fc_motor::trigger( int event ) {
  * Control what the machine returns when another process requests its state
  */
 
-int Atm_fc_motor::state( void ) {
+int Atm_mc_esc::state( void ) {
   return motor_cur_speed;
 }
 
@@ -92,7 +92,7 @@ int Atm_fc_motor::state( void ) {
  * Sets the symbol table and the default logging method for serial monitoring
  */
 
-Atm_fc_motor& Atm_fc_motor::trace( Stream & stream ) {
+Atm_mc_esc& Atm_mc_esc::trace( Stream & stream ) {
   Machine::setTrace( &stream, atm_serial_debug::trace,
     "MOTORS\0ELSE\0IDLE" );
   return *this;

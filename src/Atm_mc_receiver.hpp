@@ -17,37 +17,37 @@ typedef struct {
 
 // TODO overnemen uit Atm_mpu6050: connectorsetup en p2l vervangen door structveld
 
-class Atm_fc_receiver: public Machine {
+class Atm_mc_receiver: public Machine {
 
  public:
   enum { IDLE, WAIT, PAUSE, RUN, CHANGED }; // STATES
   enum { EVT_WAIT, EVT_TIMER,  EVT_START, EVT_STOP, EVT_TOGGLE, EVT_CHANGED, ELSE }; // EVENTS
-  Atm_fc_receiver( void ) : Machine() {};
-  Atm_fc_receiver& begin(  int p0, int p1 = -1, int p2 = -1, int p3 = -1, int p4 = -1, int p5 = -1  );
-  Atm_fc_receiver& trace( Stream & stream );
-  Atm_fc_receiver& trigger( int event );
+  Atm_mc_receiver( void ) : Machine() {};
+  Atm_mc_receiver& begin(  int p0, int p1 = -1, int p2 = -1, int p3 = -1, int p4 = -1, int p5 = -1  );
+  Atm_mc_receiver& trace( Stream & stream );
+  Atm_mc_receiver& trigger( int event );
   int state( void );
   void handleInterruptPWM( int pch );
   void handleInterruptPPM();
   int read( int lch, bool raw = 0 );
-  Atm_fc_receiver& ppm( void );
-  Atm_fc_receiver& pwm( void );
-  Atm_fc_receiver& start( void );
-  Atm_fc_receiver& stop( void );
-  Atm_fc_receiver& toggle( void );
-  Atm_fc_receiver& reset( int lch = -1 );
-  Atm_fc_receiver& sticky( int lch, int value );
-  Atm_fc_receiver& sticky( int value );
+  Atm_mc_receiver& ppm( void );
+  Atm_mc_receiver& pwm( void );
+  Atm_mc_receiver& start( void );
+  Atm_mc_receiver& stop( void );
+  Atm_mc_receiver& toggle( void );
+  Atm_mc_receiver& reset( int lch = -1 );
+  Atm_mc_receiver& sticky( int lch, int value );
+  Atm_mc_receiver& sticky( int value );
   int minimum( int lch );
   int maximum( int lch );  
-  Atm_fc_receiver& calibrate( int idx, int min, int max );
+  Atm_mc_receiver& calibrate( int idx, int min, int max );
 
-  Atm_fc_receiver& onChange( uint8_t idx );  
-  Atm_fc_receiver& onChange( uint8_t id, atm_cb_push_t callback, int idx = 0 );
-  Atm_fc_receiver& onChange( uint8_t id, Machine& machine, int event = 0 );
-  Atm_fc_receiver& onChange( atm_cb_push_t callback, int idx = 0 );
-  Atm_fc_receiver& onChange( Machine& machine, int event = 0 );
-  Atm_fc_receiver& mapping( int pch0 = -1, int pch1 = -1, int pch2 = -1, int pch3 = -1, int pch4 = -1, int pch5 = -1 );
+  Atm_mc_receiver& onChange( uint8_t idx );  
+  Atm_mc_receiver& onChange( uint8_t id, atm_cb_push_t callback, int idx = 0 );
+  Atm_mc_receiver& onChange( uint8_t id, Machine& machine, int event = 0 );
+  Atm_mc_receiver& onChange( atm_cb_push_t callback, int idx = 0 );
+  Atm_mc_receiver& onChange( Machine& machine, int event = 0 );
+  Atm_mc_receiver& mapping( int pch0 = -1, int pch1 = -1, int pch2 = -1, int pch3 = -1, int pch4 = -1, int pch5 = -1 );
 
  private:
   enum { ENT_CHANGED }; // ACTIONS
@@ -55,7 +55,7 @@ class Atm_fc_receiver: public Machine {
   void action( int id );
   int translate( int idx ); 
   rc_struct volatile channel[CHANNELS];  
-  static Atm_fc_receiver * instance;
+  static Atm_mc_receiver * instance;
   uint8_t volatile ppm_pulse_counter;
   uint32_t volatile ppm_last_pulse;
   atm_connector connector[CHANNELS];
@@ -71,7 +71,7 @@ Automaton::ATML::begin - Automaton Markup Language
 
 <?xml version="1.0" encoding="UTF-8"?>
 <machines>
-  <machine name="Atm_fc_receiver">
+  <machine name="Atm_mc_receiver">
     <states>
       <IDLE index="0" sleep="1">
       </IDLE>

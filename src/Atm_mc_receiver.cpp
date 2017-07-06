@@ -1,10 +1,10 @@
-#include "Atm_fc_receiver.hpp"
+#include "Atm_mc_receiver.hpp"
 
 // WARNING: You can only run one instance of this class per sketch 
 
 // TODO: Smoothen startup (suppress first RC signal)
 
-Atm_fc_receiver& Atm_fc_receiver::begin( int p0, int p1, int p2, int p3, int p4, int p5 ) {
+Atm_mc_receiver& Atm_mc_receiver::begin( int p0, int p1, int p2, int p3, int p4, int p5 ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
     /*                ON_ENTER    ON_LOOP  ON_EXIT  EVT_WAIT EVT_TIMER  EVT_START EVT_STOP EVT_TOGGLE EVT_CHANGED ELSE */
@@ -34,13 +34,13 @@ Atm_fc_receiver& Atm_fc_receiver::begin( int p0, int p1, int p2, int p3, int p4,
   return *this;          
 }
 
-Atm_fc_receiver * Atm_fc_receiver::instance; // Only one instance allowed for now!
+Atm_mc_receiver * Atm_mc_receiver::instance; // Only one instance allowed for now!
 
 /* Add C++ code for each internally handled event (input) 
  * The code must return 1 to trigger the event
  */
 
-int Atm_fc_receiver::event( int id ) {
+int Atm_mc_receiver::event( int id ) {
   switch ( id ) {
     case EVT_WAIT:
       return channel[0].last_high > 0;
@@ -61,7 +61,7 @@ int Atm_fc_receiver::event( int id ) {
  * This generates the 'output' for the state machine
  */
 
-void Atm_fc_receiver::action( int id ) {
+void Atm_mc_receiver::action( int id ) {
   switch ( id ) {
     case ENT_CHANGED:
       for ( int pch = 0; pch <= max_used_channel; pch++ ) {
@@ -84,7 +84,7 @@ void Atm_fc_receiver::action( int id ) {
   }
 }
 
-void Atm_fc_receiver::handleInterruptPWM( int pch ) { // pch = physical channel no
+void Atm_mc_receiver::handleInterruptPWM( int pch ) { // pch = physical channel no
   //cli();
   if ( digitalRead( channel[pch].pin ) ) {
     channel[pch].last_high = micros();    
@@ -94,7 +94,7 @@ void Atm_fc_receiver::handleInterruptPWM( int pch ) { // pch = physical channel 
   //sei();  
 }
 
-void Atm_fc_receiver::handleInterruptPPM() {
+void Atm_mc_receiver::handleInterruptPPM() {
   //cli();
   uint32_t delta = micros() - ppm_last_pulse;
   if ( delta > 4000 ) { // Reset pulse_counter on long gap
@@ -109,7 +109,7 @@ void Atm_fc_receiver::handleInterruptPPM() {
   //sei();  
 }
 
-int Atm_fc_receiver::translate( int pch ) { // pch = physical channel no
+int Atm_mc_receiver::translate( int pch ) { // pch = physical channel no
   int center = channel[pch].max - channel[pch].min / 2;
   if ( channel[pch].value > center + channel[pch].sticky ) { // Upper slope
     if ( channel[pch].value >= channel[pch].max - channel[pch].sticky ) { 
@@ -127,7 +127,7 @@ int Atm_fc_receiver::translate( int pch ) { // pch = physical channel no
   return 500; // Dead center
 }
 
-Atm_fc_receiver& Atm_fc_receiver::mapping( int lch0, int lch1, int lch2, int lch3, int lch4, int lch5 /* = -1 */ ) {
+Atm_mc_receiver& Atm_mc_receiver::mapping( int lch0, int lch1, int lch2, int lch3, int lch4, int lch5 /* = -1 */ ) {
   channel[0].logical = lch0; 
   channel[1].logical = lch1; 
   channel[2].logical = lch2; 
@@ -143,7 +143,7 @@ Atm_fc_receiver& Atm_fc_receiver::mapping( int lch0, int lch1, int lch2, int lch
   return *this;
 }
 
-int Atm_fc_receiver::read( int lch, bool raw /* = 0 */ ) {
+int Atm_mc_receiver::read( int lch, bool raw /* = 0 */ ) {
   int pch = physical[lch];
   if ( raw ) {
     return channel[pch].value;
@@ -153,68 +153,68 @@ int Atm_fc_receiver::read( int lch, bool raw /* = 0 */ ) {
   }
 }
 
-Atm_fc_receiver& Atm_fc_receiver::ppm( void ) { // Pulse Position Modulation
+Atm_mc_receiver& Atm_mc_receiver::ppm( void ) { // Pulse Position Modulation
   pinMode( channel[0].pin, INPUT_PULLUP );
-  if ( channel[0].pin > -1 ) attachInterrupt( channel[0].pin, []() { instance->handleInterruptPPM(); }, RISING );
-  if ( channel[1].pin > -1 ) detachInterrupt( channel[1].pin );  
-  if ( channel[2].pin > -1 ) detachInterrupt( channel[2].pin );  
-  if ( channel[3].pin > -1 ) detachInterrupt( channel[3].pin );  
-  if ( channel[4].pin > -1 ) detachInterrupt( channel[4].pin );  
-  if ( channel[5].pin > -1 ) detachInterrupt( channel[5].pin );  
+  if ( channel[0].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[0].pin ), []() { instance->handleInterruptPPM(); }, RISING );
+  if ( channel[1].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[1].pin ) );  
+  if ( channel[2].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[2].pin ) );  
+  if ( channel[3].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[3].pin ) );  
+  if ( channel[4].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[4].pin ) );  
+  if ( channel[5].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[5].pin ) );  
   max_used_channel = 5;
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::pwm( void ) { // Pulse Width Modulation
+Atm_mc_receiver& Atm_mc_receiver::pwm( void ) { // Pulse Width Modulation
   for ( int pch = 0; pch < CHANNELS; pch++ ) {
     if ( channel[pch].pin > -1 ) {
       pinMode( channel[pch].pin, INPUT_PULLUP );
       max_used_channel = pch;
     }
   }
-  if ( channel[0].pin > -1 ) attachInterrupt( channel[0].pin, []() { instance->handleInterruptPWM( 0 ); }, CHANGE );  
-  if ( channel[1].pin > -1 ) attachInterrupt( channel[1].pin, []() { instance->handleInterruptPWM( 1 ); }, CHANGE );  
-  if ( channel[2].pin > -1 ) attachInterrupt( channel[2].pin, []() { instance->handleInterruptPWM( 2 ); }, CHANGE );  
-  if ( channel[3].pin > -1 ) attachInterrupt( channel[3].pin, []() { instance->handleInterruptPWM( 3 ); }, CHANGE );  
-  if ( channel[4].pin > -1 ) attachInterrupt( channel[4].pin, []() { instance->handleInterruptPWM( 4 ); }, CHANGE );  
-  if ( channel[5].pin > -1 ) attachInterrupt( channel[5].pin, []() { instance->handleInterruptPWM( 5 ); }, CHANGE );   
+  if ( channel[0].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[0].pin ), []() { instance->handleInterruptPWM( 0 ); }, CHANGE );  
+  if ( channel[1].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[1].pin ), []() { instance->handleInterruptPWM( 1 ); }, CHANGE );  
+  if ( channel[2].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[2].pin ), []() { instance->handleInterruptPWM( 2 ); }, CHANGE );  
+  if ( channel[3].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[3].pin ), []() { instance->handleInterruptPWM( 3 ); }, CHANGE );  
+  if ( channel[4].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[4].pin ), []() { instance->handleInterruptPWM( 4 ); }, CHANGE );  
+  if ( channel[5].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[5].pin ), []() { instance->handleInterruptPWM( 5 ); }, CHANGE );   
   return *this;
 }
 
 
-Atm_fc_receiver& Atm_fc_receiver::sticky( int lch, int value ) {
+Atm_mc_receiver& Atm_mc_receiver::sticky( int lch, int value ) {
   channel[physical[lch]].sticky = value;
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::sticky( int value ) {
+Atm_mc_receiver& Atm_mc_receiver::sticky( int value ) {
   for ( int pch = 0; pch < CHANNELS; pch++ )
     channel[pch].sticky = value;
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::calibrate( int lch, int min, int max ) {
+Atm_mc_receiver& Atm_mc_receiver::calibrate( int lch, int min, int max ) {
   channel[physical[lch]].min = min;
   channel[physical[lch]].max = max;
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::start( void ) {
+Atm_mc_receiver& Atm_mc_receiver::start( void ) {
   trigger( EVT_START );
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::stop( void ) {
+Atm_mc_receiver& Atm_mc_receiver::stop( void ) {
   trigger( EVT_STOP );
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::toggle( void ) {
+Atm_mc_receiver& Atm_mc_receiver::toggle( void ) {
   trigger( EVT_TOGGLE );
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::reset( int lch /* = -1 */ ) {
+Atm_mc_receiver& Atm_mc_receiver::reset( int lch /* = -1 */ ) {
   if ( lch > -1 ) {
     channel[physical[lch]].min = 1100;
     channel[physical[lch]].max = 1900;
@@ -227,11 +227,11 @@ Atm_fc_receiver& Atm_fc_receiver::reset( int lch /* = -1 */ ) {
   return *this;
 }
 
-int Atm_fc_receiver::minimum( int lch ) {
+int Atm_mc_receiver::minimum( int lch ) {
   return channel[physical[lch]].min;      
 }
 
-int Atm_fc_receiver::maximum( int lch ) {
+int Atm_mc_receiver::maximum( int lch ) {
   return channel[physical[lch]].max;      
 }
 
@@ -239,7 +239,7 @@ int Atm_fc_receiver::maximum( int lch ) {
  * Control how your machine processes triggers
  */
 
-Atm_fc_receiver& Atm_fc_receiver::trigger( int event ) {
+Atm_mc_receiver& Atm_mc_receiver::trigger( int event ) {
   Machine::trigger( event );
   return *this;
 }
@@ -248,31 +248,31 @@ Atm_fc_receiver& Atm_fc_receiver::trigger( int event ) {
  * Control what the machine returns when another process requests its state
  */
 
-int Atm_fc_receiver::state( void ) {
+int Atm_mc_receiver::state( void ) {
   return Machine::state();
 }
 
-Atm_fc_receiver& Atm_fc_receiver::onChange( uint8_t id ) {
+Atm_mc_receiver& Atm_mc_receiver::onChange( uint8_t id ) {
   connector[id].mode_flags = atm_connector::MODE_NULL;
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::onChange( uint8_t id, atm_cb_push_t callback, int idx /* = 0 */ ) {
+Atm_mc_receiver& Atm_mc_receiver::onChange( uint8_t id, atm_cb_push_t callback, int idx /* = 0 */ ) {
   connector[id].set( callback, idx );
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::onChange( uint8_t id, Machine& machine, int event /* = 0 */ ) {
+Atm_mc_receiver& Atm_mc_receiver::onChange( uint8_t id, Machine& machine, int event /* = 0 */ ) {
   connector[id].set( &machine, event );
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::onChange( atm_cb_push_t callback, int idx /* = 0 */ ) {
+Atm_mc_receiver& Atm_mc_receiver::onChange( atm_cb_push_t callback, int idx /* = 0 */ ) {
   onchange.set( callback, idx );
   return *this;
 }
 
-Atm_fc_receiver& Atm_fc_receiver::onChange( Machine& machine, int event /* = 0 */ ) {
+Atm_mc_receiver& Atm_mc_receiver::onChange( Machine& machine, int event /* = 0 */ ) {
   onchange.set( &machine, event );
   return *this;
 }
@@ -290,7 +290,7 @@ Atm_fc_receiver& Atm_fc_receiver::onChange( Machine& machine, int event /* = 0 *
  * Sets the symbol table and the default logging method for serial monitoring
  */
 
-Atm_fc_receiver& Atm_fc_receiver::trace( Stream & stream ) {
+Atm_mc_receiver& Atm_mc_receiver::trace( Stream & stream ) {
   Machine::setTrace( &stream, atm_serial_debug::trace,
     "RC\0EVT_WAIT\0EVT_TIMER\0EVT_START\0EVT_STOP\0EVT_TOGGLE\0EVT_CHANGED\0ELSE\0IDLE\0WAIT\0PAUSE\0RUN\0CHANGED" );
   return *this;
