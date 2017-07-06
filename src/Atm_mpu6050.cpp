@@ -1,4 +1,4 @@
-#include "Atm_mpu6050.h"
+#include "Atm_mpu6050.hpp"
 #include "MPU6050_6Axis_MotionApps20.h"
 
 Atm_mpu6050& Atm_mpu6050::begin( int sample_rate ) {

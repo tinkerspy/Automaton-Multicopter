@@ -1,4 +1,4 @@
-#include "Atm_fc_mixer.h"
+#include "Atm_fc_mixer.hpp"
 
 /* Add optional parameters for the state machine to begin()
  * Add extra initialization code

@@ -1,4 +1,4 @@
-#include "Atm_fc_motor.h"
+#include "Atm_fc_motor.hpp"
 
 /* Add optional parameters for the state machine to begin()
  * Add extra initialization code
@@ -17,9 +17,15 @@ Atm_fc_motor& Atm_fc_motor::begin( int p, int frequency /* = 50 */ ) {
   //Machine::begin( state_table, ELSE ); // For now!!!
   motor_pin = p;
   pinMode( motor_pin, OUTPUT );
-  analogWriteFrequency( motor_pin, frequency );
-  analogWriteResolution( 16 ); // Global effect!
-  analogWrite( motor_pin, 0 );
+  if ( frequency == -1 ) {
+    servo.attach( p );
+    servo_mode = 1;
+  } else {
+    analogWriteFrequency( motor_pin, frequency );
+    analogWriteResolution( 16 ); // Global effect!
+    analogWrite( motor_pin, 0 );
+    servo_mode = 0;
+  }
   pwm1000width = ( frequency / 50 ) * PWM_50HZ_1000US;
   return *this;          
 }
@@ -45,7 +51,11 @@ void Atm_fc_motor::action( int id ) {
 
 Atm_fc_motor& Atm_fc_motor::speed( int v ) {
   motor_cur_speed = constrain( v, 0, 1000 );
-  analogWrite( motor_pin, map( motor_cur_speed, 0, 1000, pwm1000width, pwm1000width * 2  ) );
+  if ( servo_mode ) {
+    servo.writeMicroseconds( map( motor_cur_speed, 0, 1000, 1000, 2000  ) );
+  } else {
+    analogWrite( motor_pin, map( motor_cur_speed, 0, 1000, pwm1000width, pwm1000width * 2  ) );
+  }
   return *this;
 }
 
