@@ -81,17 +81,14 @@ void Atm_mc_receiver::action( int id ) {
 }
 
 void Atm_mc_receiver::handleInterruptPWM( int pch ) { // pch = physical channel no
-  //cli();
   if ( digitalRead( channel[pch].pin ) ) {
     channel[pch].last_high = micros();    
   } else {
     channel[pch].value = micros() - channel[pch].last_high; 
   }
-  //sei();  
 }
 
 void Atm_mc_receiver::handleInterruptPPM() {
-  //cli();
   uint32_t delta = micros() - ppm_last_pulse;
   if ( delta > 4000 ) { // Reset pulse_counter on long gap
     ppm_pulse_counter = 0;
@@ -102,7 +99,6 @@ void Atm_mc_receiver::handleInterruptPPM() {
     ppm_pulse_counter++;
   }
   ppm_last_pulse = micros();
-  //sei();  
 }
 
 int Atm_mc_receiver::translate( int pch ) { // pch = physical channel no
