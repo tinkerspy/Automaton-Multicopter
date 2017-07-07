@@ -81,6 +81,7 @@ void Atm_mc_receiver::action( int id ) {
 }
 
 void Atm_mc_receiver::handleInterruptPWM( int pch ) { // pch = physical channel no
+  intCount++;
   if ( digitalRead( channel[pch].pin ) ) {
     channel[pch].last_high = micros();    
   } else {

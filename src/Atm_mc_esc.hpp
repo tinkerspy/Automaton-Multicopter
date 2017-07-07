@@ -12,7 +12,29 @@
 
 // Source: https://github.com/FortySevenEffects/arduino_midi_library/issues/65
 
-#define TEENSY_HW_PWM (__MKL26Z64__ || __MK20DX256__ || __MK62FX512__ || __MK66FX1M0__ )
+#if defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK62FX512__) || defined(__MK66FX1M0__ )
+#define TEENSY_HW_PWM
+#endif
+
+#ifdef __MKL26Z64__
+yep Teensy LC
+#endif
+
+#ifdef __MK20DX256__
+yep Teensy 3.1/3.2
+#endif
+
+#ifdef __MK62FX512__
+yep Teensy 3.5
+#endif
+
+#ifdef __MK66FX1M0__
+yep Teensy 3.6
+#endif
+
+#ifdef TEENSY_HW_PWM
+yep Teensy HW PWM
+#endif
 
 class Atm_mc_esc: public Machine {
 

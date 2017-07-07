@@ -49,6 +49,7 @@ class Atm_mc_receiver: public Machine {
 
   
   Atm_mc_receiver& mapping( int pch0 = -1, int pch1 = -1, int pch2 = -1, int pch3 = -1, int pch4 = -1, int pch5 = -1 );
+  int volatile intCount = 0;
 
  private:
   enum { ENT_CHANGED }; // ACTIONS
