@@ -43,7 +43,7 @@ Atm_mc_receiver * Atm_mc_receiver::instance; // Only one instance allowed for no
 int Atm_mc_receiver::event( int id ) {
   switch ( id ) {
     case EVT_WAIT:
-      return channel[0].last_high > 0;
+      return channel[0].last_high > 0 || ppm_last_pulse > 0;
     case EVT_TIMER:
       return timer.expired( this );
     case EVT_CHANGED:
