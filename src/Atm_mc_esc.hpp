@@ -5,6 +5,15 @@
  
 #define PWM_50HZ_1000US 3277
 
+// __MKL26Z64__  Teensy LC
+// __MK20DX256__ Teensy 3.1/3.2
+// __MK62FX512__ Teensy 3.5
+// __MK66FX1M0__ Teensy 3.6
+
+// Source: https://github.com/FortySevenEffects/arduino_midi_library/issues/65
+
+#define TEENSY_HW_PWM (__MKL26Z64__ || __MK20DX256__ || __MK62FX512__ || __MK66FX1M0__ )
+
 class Atm_mc_esc: public Machine {
 
  public:

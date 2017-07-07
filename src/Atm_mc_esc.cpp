@@ -9,10 +9,10 @@
  
 Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
   // clang-format off
-  const static state_t state_table[] PROGMEM = {
-    /*          ON_ENTER    ON_LOOP  ON_EXIT  ELSE */
-    /*  IDLE */       -1, ATM_SLEEP,      -1,   -1,
-  };
+//  const static state_t state_table[] PROGMEM = {
+//    /*          ON_ENTER    ON_LOOP  ON_EXIT  ELSE */
+//    /*  IDLE */       -1, ATM_SLEEP,      -1,   -1,
+//  };
   // clang-format on
   //Machine::begin( state_table, ELSE ); // For now!!!
   motor_pin = p;
@@ -21,8 +21,10 @@ Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
     servo.attach( p );
     servo_mode = 1;
   } else {
-    analogWriteFrequency( motor_pin, frequency );
+#ifdef TEENSY_HW_PWM
+    analogWriteFrequency( motor_pin, frequency );  
     analogWriteResolution( 16 ); // Global effect!
+#endif    
     analogWrite( motor_pin, 0 );
     servo_mode = 0;
   }

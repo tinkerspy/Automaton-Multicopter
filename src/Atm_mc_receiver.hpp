@@ -15,6 +15,7 @@ typedef struct {
 
 #define CHANNELS 6
 
+// TODO overnemen uit Atm_mpu6050: connectorsetup en p2l vervangen door structveld
 
 class Atm_mc_receiver: public Machine {
 
@@ -40,10 +41,13 @@ class Atm_mc_receiver: public Machine {
   int minimum( int lch );
   int maximum( int lch );  
   Atm_mc_receiver& calibrate( int idx, int min, int max );
+
   Atm_mc_receiver& onChange( Machine& machine, int event = 0 );
   Atm_mc_receiver& onChange( atm_cb_push_t callback, int idx = 0 );
   Atm_mc_receiver& onChange( int sub, Machine& machine, int event = 0 );
-  Atm_mc_receiver& onChange( int sub, atm_cb_push_t callback, int idx = 0 );  
+  Atm_mc_receiver& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
+
+  
   Atm_mc_receiver& mapping( int pch0 = -1, int pch1 = -1, int pch2 = -1, int pch3 = -1, int pch4 = -1, int pch5 = -1 );
 
  private:
@@ -59,7 +63,7 @@ class Atm_mc_receiver: public Machine {
   uint8_t volatile ppm_pulse_counter;
   uint32_t volatile ppm_last_pulse;
   uint8_t max_used_channel;
-  int physical[CHANNELS]; // make it a uint8_t
+  int physical[CHANNELS]; // make it a uint8_t???
   atm_timer_millis timer; // Wait for RC to stabilize
   
 };

@@ -57,19 +57,14 @@ int Atm_pid::event( int id ) {
  */
 
 void Atm_pid::action( int id ) {
-  float error;
   switch ( id ) {
     case ENT_SAMPLE:
+      push( connectors, ON_SAMPLE, 0, 0, 0 ); 
       connectors[ON_SAMPLE].push( 0, 0 ); 
-      error = setPoint - processVariable;
-      integral += error * ( timer.value / 1000.0 );    
-      integral = constrain( integral, -windup_guard, +windup_guard ); 
-      derivative = ( error - last_error ) / float( timer.value );    
-      controlVariable = ( Kp * error ) + ( Ki * integral ) + ( Kd * derivative );   
-      last_error = error;        
+      controlVariable = calculate( setPoint, processVariable );
       return;
     case ENT_CHANGED:
-      connectors[ON_CHANGE].push( controlVariable * 10000, 0 );
+      push( connectors, ON_CHANGE, 0, controlVariable * 10000, 0 ); 
       last_cv = controlVariable;
       return;
   }
@@ -84,11 +79,20 @@ Atm_pid& Atm_pid::trigger( int event ) {
   return *this;
 }
 
-Atm_pid& Atm_pid::sp( float setPoint ) {
+float Atm_pid::calculate( float setPoint, float processVariable ) {
+  float error = setPoint - processVariable;
+  integral += error * ( timer.value / 1000.0 );    
+  integral = constrain( integral, -windup_guard, +windup_guard ); 
+  derivative = ( error - last_error ) / float( timer.value );    
+  last_error = error;          
+  return ( Kp * error ) + ( Ki * integral ) + ( Kd * derivative );   
+}
+
+Atm_pid& Atm_pid::sp( float setPoint ) { // TODO: While in HOLD ignore setPoint changes
   if ( Machine::state() ) {
     this->setPoint = setPoint;
   } else {
-    connectors[ON_CHANGE].push( setPoint * 10000, 0 ); // Open loop mode (CV = SP)
+    connectors[ON_CHANGE].push( setPoint, 0 ); // Open loop mode (CV = SP): units!!!!
   }
   return *this;
 }

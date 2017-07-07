@@ -29,6 +29,7 @@ class Atm_pid: public Machine {
   atm_connector connectors[CONN_MAX];
   int event( int id ); 
   void action( int id ); 
+  float calculate( float setPoint, float processVariable );
   atm_timer_millis timer;
   float Kp, Ki, Kd;
   float setPoint, processVariable, controlVariable, last_cv;

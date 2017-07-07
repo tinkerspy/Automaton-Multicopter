@@ -69,7 +69,7 @@ void Atm_mc_receiver::action( int id ) {
           channel[pch].last_value = channel[pch].value; 
           if ( channel[pch].value < channel[pch].min && channel[pch].value > 800  ) channel[pch].min = channel[pch].value;
           if ( channel[pch].value > channel[pch].max && channel[pch].value < 2200 ) channel[pch].max = channel[pch].value;
-          int v = translate( pch );
+          uint16_t v = translate( pch );
           if ( v != channel[pch].last_output ) {  
             push( connectors, ON_CHANGE, channel[pch].logical, v, channel[pch].logical );
             channel[pch].last_output = v;
