@@ -22,7 +22,7 @@ Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
     servo_mode = 1;
   } else {
 #ifdef TEENSY_HW_PWM
-    analogWriteFrequency( motor_pin, frequency );  
+    analogWriteFrequency( motor_pin, frequency );
     analogWriteResolution( 16 ); // Global effect!
 #endif    
     analogWrite( motor_pin, 0 );

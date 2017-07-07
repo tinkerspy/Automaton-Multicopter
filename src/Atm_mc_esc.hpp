@@ -16,26 +16,6 @@
 #define TEENSY_HW_PWM
 #endif
 
-#ifdef __MKL26Z64__
-yep Teensy LC
-#endif
-
-#ifdef __MK20DX256__
-yep Teensy 3.1/3.2
-#endif
-
-#ifdef __MK62FX512__
-yep Teensy 3.5
-#endif
-
-#ifdef __MK66FX1M0__
-yep Teensy 3.6
-#endif
-
-#ifdef TEENSY_HW_PWM
-yep Teensy HW PWM
-#endif
-
 class Atm_mc_esc: public Machine {
 
  public:
