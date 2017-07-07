@@ -246,12 +246,9 @@ Atm_mc_receiver& Atm_mc_receiver::pwm( void ) { // Pulse Width Modulation
   if ( channel[4].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[4].pin ), []() { instance->handleInterruptPWM( 4 ); }, CHANGE );  
   if ( channel[5].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[5].pin ), []() { instance->handleInterruptPWM( 5 ); }, CHANGE );
 #else 
-  if ( channel[0].pin > -1 ) set_channel( 0, channel[0].pin );
-  if ( channel[1].pin > -1 ) set_channel( 1, channel[1].pin );
-  if ( channel[2].pin > -1 ) set_channel( 2, channel[2].pin );
-  if ( channel[3].pin > -1 ) set_channel( 3, channel[3].pin );
-  if ( channel[4].pin > -1 ) set_channel( 4, channel[4].pin );
-  if ( channel[5].pin > -1 ) set_channel( 5, channel[5].pin );
+  for ( int pch = 0; pch < CHANNELS; pch++ ) {
+    if ( channel[pch].pin > -1 ) set_channel( pch, channel[pch].pin );
+  }
 #endif  
   return *this;
 }
