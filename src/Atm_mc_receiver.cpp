@@ -1,8 +1,9 @@
 #include "Atm_mc_receiver.hpp"
 
+// RC receiver PWM/PPM state machine
+// Platforms tested: Arduino UNO, Teensy 3.1/3.2/3.5/3.6/LC
+ 
 // WARNING: You can only run one instance of this class per sketch 
-
-// TODO: Smoothen startup (suppress first RC signal)
 
 Atm_mc_receiver& Atm_mc_receiver::begin( int p0, int p1, int p2, int p3, int p4, int p5 ) {
   // clang-format off
@@ -81,7 +82,6 @@ void Atm_mc_receiver::action( int id ) {
 }
 
 void Atm_mc_receiver::handleInterruptPWM( int pch ) { // pch = physical channel no
-  intCount++;
   if ( digitalRead( channel[pch].pin ) ) {
     channel[pch].last_high = micros();    
   } else {
@@ -101,6 +101,75 @@ void Atm_mc_receiver::handleInterruptPPM() {
   }
   ppm_last_pulse = micros();
 }
+
+#ifndef TEENSY
+
+// Set up the pin change interrupt for a channel/pin combo
+
+void Atm_mc_receiver::set_channel( int ch, int pin ) { 
+  static int interrupt[][2] = {
+    { PCINT16, 2 },{ PCINT17, 2 },{ PCINT18, 2 },{ PCINT19, 2 },{ PCINT20, 2 },
+    { PCINT21, 2 },{ PCINT22, 2 },{ PCINT23, 2 },{ PCINT0 , 0 },{ PCINT1 , 0 },
+    { PCINT2 , 0 },{ PCINT3 , 0 },{ PCINT4 , 0 },{ PCINT5 , 0 },{ PCINT8 , 1 },
+    { PCINT9 , 1 },{ PCINT10, 1 },{ PCINT11, 1 },{ PCINT12, 1 },{ PCINT13, 1 },
+  };
+  switch ( interrupt[pin][1] ) {
+    case 0:
+      PCMSK0 |= bit( interrupt[pin][0] );
+      PCIFR  |= bit( PCIF0 );
+      PCICR  |= bit( PCIE0 );
+      int_state[0].channel[interrupt[pin][0]] = ch;
+      break;
+    case 1:
+      PCMSK1 |= bit( interrupt[pin][0] );
+      PCIFR  |= bit( PCIF1 );
+      PCICR  |= bit( PCIE1 );
+      int_state[1].channel[interrupt[pin][0]] = ch;
+      break;
+    case 2:
+      PCMSK2 |= bit( interrupt[pin][0] );
+      PCIFR  |= bit( PCIF2 );
+      PCICR  |= bit( PCIE2 );
+      int_state[2].channel[interrupt[pin][0]] = ch;
+      break;
+  }
+}
+
+// Process pin change interrupts and calculate pulse times (PWM mode)
+
+void Atm_mc_receiver::register_pin_change_pwm( byte int_no, byte mask ) { 
+  byte diff, p;
+  if ( ( diff = ( ~int_state[int_no].reg & PIND ) & mask ) ) { // Pin(s) that went high
+    p = 0;
+    while ( diff ) {
+      if ( diff & 1 ) {
+        channel[int_state[int_no].channel[p]].last_high = micros(); // 16 bit resolution
+      }
+      diff >>= 1;
+      p++;
+    }
+  }
+  if ( ( diff = ( int_state[int_no].reg & ~PIND ) & mask ) ) { // Pin(s) that went low
+    p = 0;
+    while ( diff ) {
+      if ( diff & 1 ) {
+        byte ch = int_state[int_no].channel[p];
+        channel[ch].value = micros() - channel[ch].last_high; // 16 bit resolution
+      }
+      diff >>= 1;
+      p++;
+    }
+  }
+  int_state[int_no].reg = PIND;  
+}
+
+// The Uno's micros() funtion has only a 4 us resolution
+// This can be fixed if necessary with a timer interrupt
+
+ISR (PCINT0_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 0, PCMSK0 ); }
+ISR (PCINT1_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 1, PCMSK1 ); }
+ISR (PCINT2_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 2, PCMSK2 ); }
+#endif
 
 int Atm_mc_receiver::translate( int pch ) { // pch = physical channel no
   int center = channel[pch].max - channel[pch].min / 2;
@@ -148,6 +217,7 @@ int Atm_mc_receiver::read( int lch, bool raw /* = 0 */ ) {
 
 Atm_mc_receiver& Atm_mc_receiver::ppm( void ) { // Pulse Position Modulation
   pinMode( channel[0].pin, INPUT_PULLUP );
+#ifdef TEENSY
   if ( channel[0].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[0].pin ), []() { instance->handleInterruptPPM(); }, RISING );
   if ( channel[1].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[1].pin ) );  
   if ( channel[2].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[2].pin ) );  
@@ -155,6 +225,9 @@ Atm_mc_receiver& Atm_mc_receiver::ppm( void ) { // Pulse Position Modulation
   if ( channel[4].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[4].pin ) );  
   if ( channel[5].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[5].pin ) );  
   max_used_channel = 5;
+#else 
+  // Oops PPM is not yet implemented on UNO!
+#endif
   return *this;
 }
 
@@ -165,12 +238,21 @@ Atm_mc_receiver& Atm_mc_receiver::pwm( void ) { // Pulse Width Modulation
       max_used_channel = pch;
     }
   }
+#ifdef TEENSY
   if ( channel[0].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[0].pin ), []() { instance->handleInterruptPWM( 0 ); }, CHANGE );  
   if ( channel[1].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[1].pin ), []() { instance->handleInterruptPWM( 1 ); }, CHANGE );  
   if ( channel[2].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[2].pin ), []() { instance->handleInterruptPWM( 2 ); }, CHANGE );  
   if ( channel[3].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[3].pin ), []() { instance->handleInterruptPWM( 3 ); }, CHANGE );  
   if ( channel[4].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[4].pin ), []() { instance->handleInterruptPWM( 4 ); }, CHANGE );  
-  if ( channel[5].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[5].pin ), []() { instance->handleInterruptPWM( 5 ); }, CHANGE );   
+  if ( channel[5].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[5].pin ), []() { instance->handleInterruptPWM( 5 ); }, CHANGE );
+#else 
+  if ( channel[0].pin > -1 ) set_channel( 0, channel[0].pin );
+  if ( channel[1].pin > -1 ) set_channel( 1, channel[1].pin );
+  if ( channel[2].pin > -1 ) set_channel( 2, channel[2].pin );
+  if ( channel[3].pin > -1 ) set_channel( 3, channel[3].pin );
+  if ( channel[4].pin > -1 ) set_channel( 4, channel[4].pin );
+  if ( channel[5].pin > -1 ) set_channel( 5, channel[5].pin );
+#endif  
   return *this;
 }
 

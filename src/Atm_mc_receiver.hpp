@@ -2,6 +2,12 @@
 
 #include <Automaton.h>
 
+#if defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK62FX512__) || defined(__MK66FX1M0__ )
+#define TEENSY
+#endif
+
+#define CHANNELS 6
+
 typedef struct {
     uint8_t pin;
     uint16_t value;
@@ -13,9 +19,12 @@ typedef struct {
     int logical;
 } rc_struct;
 
-#define CHANNELS 6
-
-// TODO overnemen uit Atm_mpu6050: connectorsetup en p2l vervangen door structveld
+#ifndef TEENSY
+typedef struct {
+  byte reg;
+  byte channel[8];
+} int_struct;
+#endif
 
 class Atm_mc_receiver: public Machine {
 
@@ -46,11 +55,11 @@ class Atm_mc_receiver: public Machine {
   Atm_mc_receiver& onChange( atm_cb_push_t callback, int idx = 0 );
   Atm_mc_receiver& onChange( int sub, Machine& machine, int event = 0 );
   Atm_mc_receiver& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
-
   
   Atm_mc_receiver& mapping( int pch0 = -1, int pch1 = -1, int pch2 = -1, int pch3 = -1, int pch4 = -1, int pch5 = -1 );
-  int volatile intCount = 0;
-
+  static Atm_mc_receiver * instance;
+  void register_pin_change_pwm( byte int_no, byte mask );
+  
  private:
   enum { ENT_CHANGED }; // ACTIONS
   enum { ON_CHANGE, CONN_MAX = CHANNELS }; // CONNECTORS
@@ -59,14 +68,18 @@ class Atm_mc_receiver: public Machine {
   int event( int id ); 
   void action( int id );
   int translate( int idx ); 
+  void set_channel( int ch, int pin );
+
   rc_struct volatile channel[CHANNELS];  
-  static Atm_mc_receiver * instance;
   uint8_t volatile ppm_pulse_counter;
   uint32_t volatile ppm_last_pulse;
   uint8_t max_used_channel;
   int physical[CHANNELS]; // make it a uint8_t???
   atm_timer_millis timer; // Wait for RC to stabilize
-  
+#ifndef TEENSY
+  int_struct volatile int_state[3];
+#endif
+
 };
 
 /*
