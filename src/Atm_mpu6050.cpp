@@ -76,9 +76,9 @@ void Atm_mpu6050::action( int id ) {
       mpu6050.dmpGetQuaternion( &q, fifoBuffer );
       mpu6050.dmpGetGravity( &gravity, &q );
       mpu6050.dmpGetYawPitchRoll( tmp, &q, &gravity );
-      axis[0].value = tmp[0];
-      axis[1].value = tmp[1];
-      axis[2].value = tmp[2];
+      axis[0].value = round( ( tmp[0] * 180.0/M_PI ) * 100.0 );
+      axis[1].value = round( ( tmp[1] * 180.0/M_PI ) * 100.0 );
+      axis[2].value = round( ( tmp[2] * 180.0/M_PI ) * 100.0 );
       return;
     case ENT_CHANGED:
       for ( int i = YAW; i < ROLL + 1; i++ ) {
@@ -95,9 +95,14 @@ void Atm_mpu6050::action( int id ) {
 
 int Atm_mpu6050::read( int ypr ) {
   ypr = physical[ypr];
-  int v = round( ( axis[ypr].value  * 180.0/M_PI ) * 100.0 );
+  int v = axis[ypr].value + axis[ypr].offset;
   if ( axis[ypr].reverse ) v = v * -1;
   return map( constrain( v, -9000, 9000 ), -9000, 9000, axis[ypr].min_out, axis[ypr].max_out );    
+}
+
+Atm_mpu6050& Atm_mpu6050::calibrate( int ypr, int v ) {
+  axis[physical[ypr]].offset = v;
+  return *this;
 }
 
 Atm_mpu6050& Atm_mpu6050::range( int ypr, int toLow, int toHigh ) {

@@ -8,9 +8,9 @@
 #include "MPU6050.h"
 
 typedef struct {
-    float value, last_value;
-    int last_output;    
-    int min_out, max_out;
+    int16_t value, last_value;
+    int16_t last_output;    
+    int16_t min_out, max_out, offset;
     byte logical, reverse;
 } axis_struct;
 
@@ -42,7 +42,7 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& angle( int ypr, int max_angle );
   Atm_mpu6050& angle( int max_angle );
   Atm_mpu6050& mapping( int axis0, int axis1, int axis2 );
-  
+  Atm_mpu6050& calibrate( int ypr, int v );
 
  private:
   enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED }; // ACTIONS
