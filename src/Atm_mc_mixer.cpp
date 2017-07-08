@@ -30,6 +30,7 @@ Atm_mc_mixer& Atm_mc_mixer::config( int personality /* = CFG_MIXER_QUADX */ ) {
       input( -250, 250 );
       input( 3, 0, 1000 );
       output( -1, -1 );
+      master( 3 );
       break;
   }
   return *this;
@@ -84,12 +85,20 @@ Atm_mc_mixer& Atm_mc_mixer::mix( int output_ch ) {
   return *this;
 }
 
+// Sets an output channel as master ( -1 = disabled )
+
+Atm_mc_mixer& Atm_mc_mixer::master( int input_ch ) {
+  this->master_input = input_ch;
+  return *this;
+}
+
 // Calculates the output channel value according to the inputs and the configured mix
 
 int Atm_mc_mixer::calculate_output( int output_ch ) { // Add master role
   int v = 0;
   for ( int input_ch = 0; input_ch < NO_OF_INPUT_CHANNELS; input_ch++ )
     v += input_channel[input_ch].value * output_channel[output_ch].mix[input_ch];
+  if ( master_input > -1 && input_channel[master_input].value == 0 ) v = 0;
   return constrain( v, 0, 1000 ); 
   /* TEST THE ABOVE LOGIC!!!
   return constrain( 

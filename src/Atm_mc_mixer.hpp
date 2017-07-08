@@ -55,7 +55,7 @@ class Atm_mc_mixer: public Machine {
   void update_outputs( void );
   input_channel_struct input_channel[NO_OF_INPUT_CHANNELS];
   output_channel_struct output_channel[NO_OF_OUTPUT_CHANNELS];
-
+  byte master_input;
 };
 
 /*
