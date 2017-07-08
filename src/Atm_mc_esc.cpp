@@ -26,7 +26,7 @@ Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
 Atm_mc_esc& Atm_mc_esc::speed( int v ) {
   motor_cur_speed = constrain( v, 0, 1000 );
   if ( servo_mode ) {
-    servo.writeMicroseconds( map( motor_cur_speed, 0, 1000, 1000, 2000  ) );
+    servo.writeMicroseconds( motor_cur_speed + 1000 );
   } else {
 #ifdef TEENSY_HW_PWM
     analogWrite( motor_pin, map( motor_cur_speed, 0, 1000, pwm1000width, pwm1000width * 2  ) );

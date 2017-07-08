@@ -164,7 +164,7 @@ Atm_mc_mixer& Atm_mc_mixer::input( int input_ch, int min, int max ) {
 // Sets a single input channel value
 
 Atm_mc_mixer& Atm_mc_mixer::set( int input_ch, int value ) {
-  value = constrain( value, 0, 1000 );
+  value = constrain( value, 0, 1000 ); // document this!
   input_channel[input_ch].value = map( value, 0, 1000, input_channel[input_ch].min, input_channel[input_ch].max ); 
   if ( state() ) update_outputs();
   return *this;
