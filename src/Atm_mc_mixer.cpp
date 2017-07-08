@@ -156,7 +156,6 @@ Atm_mc_mixer& Atm_mc_mixer::input( int input_ch, int min, int max ) {
 
 Atm_mc_mixer& Atm_mc_mixer::set( int input_ch, int value ) {
   input_channel[input_ch].value = map( value, 0, 1000, input_channel[input_ch].min, input_channel[input_ch].max ); 
-  input_channel[input_ch].raw = value;
   if ( state() ) update_outputs();
   return *this;
 }

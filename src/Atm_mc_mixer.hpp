@@ -3,13 +3,13 @@
 #include <Automaton.h>
 
 #define NO_OF_INPUT_CHANNELS 4
-#define NO_OF_OUTPUT_CHANNELS 10
+#define NO_OF_OUTPUT_CHANNELS 8
 
 // TODO: Configure the master!!!!
 
 typedef struct {
     int min, max;
-    int value, raw;
+    int value;
     bool master;
 } input_channel_struct;
 
@@ -17,7 +17,6 @@ typedef struct {
     int last_output;    
     int min, max;
     float mix[NO_OF_INPUT_CHANNELS];
-    int logical; // not used yet
     bool enabled;
 } output_channel_struct;
 
