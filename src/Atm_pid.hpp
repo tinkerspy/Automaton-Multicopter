@@ -23,12 +23,14 @@ class Atm_pid: public Machine {
   Atm_pid& Kp( float KpValue );
   Atm_pid& Ki( float KiValue );
   Atm_pid& Kd( float KdValue );
+  Atm_pid& windup( float v );
   float sp( void );
   float pv( void );
   float cv( void );
   float Kp( void );
   float Ki( void );
   float Kd( void );
+  float windup( void );
   Atm_pid& reset();
 
   

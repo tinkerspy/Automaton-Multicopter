@@ -101,6 +101,16 @@ Atm_pid& Atm_pid::pv( float processVariable ) {
   this->processVariable = processVariable;
   return *this;
 }
+
+Atm_pid& Atm_pid::windup( float v ) {
+  this->windup_guard = v;
+  return *this;
+}
+
+float Atm_pid::windup( void ) {
+  return this->windup_guard ;
+}
+
 float Atm_pid::sp( void ) {
   return this->setPoint;
 }
