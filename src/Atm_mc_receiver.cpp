@@ -107,30 +107,25 @@ void Atm_mc_receiver::handleInterruptPPM() {
 // Set up the pin change interrupt for a channel/pin combo
 
 void Atm_mc_receiver::set_channel( int ch, int pin ) { 
-  static int interrupt[][2] = {
-    { PCINT16, 2 },{ PCINT17, 2 },{ PCINT18, 2 },{ PCINT19, 2 },{ PCINT20, 2 },
-    { PCINT21, 2 },{ PCINT22, 2 },{ PCINT23, 2 },{ PCINT0 , 0 },{ PCINT1 , 0 },
-    { PCINT2 , 0 },{ PCINT3 , 0 },{ PCINT4 , 0 },{ PCINT5 , 0 },{ PCINT8 , 1 },
-    { PCINT9 , 1 },{ PCINT10, 1 },{ PCINT11, 1 },{ PCINT12, 1 },{ PCINT13, 1 },
-  };
-  switch ( interrupt[pin][1] ) {
+  byte int_no = pin < 8 ? 2 : ( pin < 14 ? 0 : 1 );
+  switch ( int_no ) {
     case 0:
-      PCMSK0 |= bit( interrupt[pin][0] );
+      PCMSK0 |= bit( pin - 8 );
       PCIFR  |= bit( PCIF0 );
       PCICR  |= bit( PCIE0 );
-      int_state[0].channel[interrupt[pin][0]] = ch;
+      int_state[0].channel[pin - 8] = ch;
       break;
     case 1:
-      PCMSK1 |= bit( interrupt[pin][0] );
+      PCMSK1 |= bit( pin - 14 );
       PCIFR  |= bit( PCIF1 );
       PCICR  |= bit( PCIE1 );
-      int_state[1].channel[interrupt[pin][0]] = ch;
+      int_state[1].channel[pin - 14] = ch;
       break;
     case 2:
-      PCMSK2 |= bit( interrupt[pin][0] );
+      PCMSK2 |= bit( pin );
       PCIFR  |= bit( PCIF2 );
       PCICR  |= bit( PCIE2 );
-      int_state[2].channel[interrupt[pin][0]] = ch;
+      int_state[2].channel[pin] = ch;
       break;
   }
 }
