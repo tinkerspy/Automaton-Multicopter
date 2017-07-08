@@ -110,19 +110,19 @@ void Atm_mc_receiver::set_channel( int ch, int pin ) {
   byte int_no = pin < 8 ? 2 : ( pin < 14 ? 0 : 1 );
   pinMode( pin, INPUT_PULLUP );
   switch ( int_no ) {
-    case 0:
+    case 0: // PCINT0 PORTB D8 - D13 (pin 8 - 13 => 6 bits: 0 - 5)
       PCMSK0 |= bit( pin - 8 );
       PCIFR  |= bit( PCIF0 );
       PCICR  |= bit( PCIE0 );
       int_state[0].channel[pin - 8] = ch;
       break;
-    case 1:
+    case 1: // PCINT1 PORTC A0 - A5 (pin 14 - 19 => 6 bits: 0 - 5)
       PCMSK1 |= bit( pin - 14 );
       PCIFR  |= bit( PCIF1 );
       PCICR  |= bit( PCIE1 );
       int_state[1].channel[pin - 14] = ch;
       break;
-    case 2:
+    case 2: // PCINT2 PORTD D0 - D7 (pin 0 - 7 => 8 bits: 0 - 7) 
       PCMSK2 |= bit( pin );
       PCIFR  |= bit( PCIF2 );
       PCICR  |= bit( PCIE2 );
@@ -135,7 +135,7 @@ void Atm_mc_receiver::set_channel( int ch, int pin ) {
 
 void Atm_mc_receiver::register_pin_change_pwm( byte int_no, byte int_mask, byte bits ) { 
   byte diff, p;
-  if ( ( diff = ( ~int_state[int_no].reg & bits ) & int_mask ) ) { // Pin(s) that went high
+  if ( ( diff = ( ~int_state[int_no].reg & bits ) & int_mask ) ) { // Pin(s) went high
     p = 0;
     while ( diff ) {
       if ( diff & 1 ) {
@@ -145,7 +145,7 @@ void Atm_mc_receiver::register_pin_change_pwm( byte int_no, byte int_mask, byte 
       p++;
     }
   }
-  if ( ( diff = ( int_state[int_no].reg & ~bits ) & int_mask ) ) { // Pin(s) that went low
+  if ( ( diff = ( int_state[int_no].reg & ~bits ) & int_mask ) ) { // Pin(s) went low
     p = 0;
     while ( diff ) {
       if ( diff & 1 ) {
