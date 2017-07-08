@@ -94,7 +94,7 @@ Atm_mc_mixer& Atm_mc_mixer::master( int input_ch ) {
 
 // Calculates the output channel value according to the inputs and the configured mix
 
-int Atm_mc_mixer::calculate_output( int output_ch ) { // Add master role
+int Atm_mc_mixer::calculate_output( int output_ch ) { 
   int v = 0;
   for ( int input_ch = 0; input_ch < NO_OF_INPUT_CHANNELS; input_ch++ )
     v += input_channel[input_ch].value * output_channel[output_ch].mix[input_ch];

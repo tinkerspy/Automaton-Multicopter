@@ -108,6 +108,7 @@ void Atm_mc_receiver::handleInterruptPPM() {
 
 void Atm_mc_receiver::set_channel( int ch, int pin ) { 
   byte int_no = pin < 8 ? 2 : ( pin < 14 ? 0 : 1 );
+  pinMode( pin, INPUT_PULLUP );
   switch ( int_no ) {
     case 0:
       PCMSK0 |= bit( pin - 8 );
