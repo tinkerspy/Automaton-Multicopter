@@ -132,9 +132,9 @@ void Atm_mc_receiver::set_channel( int ch, int pin ) {
 
 // Process pin change interrupts and calculate pulse times (PWM mode)
 
-void Atm_mc_receiver::register_pin_change_pwm( byte int_no, byte mask ) { 
+void Atm_mc_receiver::register_pin_change_pwm( byte int_no, byte int_mask, byte bits ) { 
   byte diff, p;
-  if ( ( diff = ( ~int_state[int_no].reg & PIND ) & mask ) ) { // Pin(s) that went high
+  if ( ( diff = ( ~int_state[int_no].reg & bits ) & int_mask ) ) { // Pin(s) that went high
     p = 0;
     while ( diff ) {
       if ( diff & 1 ) {
@@ -144,7 +144,7 @@ void Atm_mc_receiver::register_pin_change_pwm( byte int_no, byte mask ) {
       p++;
     }
   }
-  if ( ( diff = ( int_state[int_no].reg & ~PIND ) & mask ) ) { // Pin(s) that went low
+  if ( ( diff = ( int_state[int_no].reg & ~bits ) & int_mask ) ) { // Pin(s) that went low
     p = 0;
     while ( diff ) {
       if ( diff & 1 ) {
@@ -155,15 +155,15 @@ void Atm_mc_receiver::register_pin_change_pwm( byte int_no, byte mask ) {
       p++;
     }
   }
-  int_state[int_no].reg = PIND;  
+  int_state[int_no].reg = bits;  
 }
 
 // The Uno's micros() funtion has only a 4 us resolution
 // This can be fixed if necessary with a timer interrupt
 
-ISR (PCINT0_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 0, PCMSK0 ); }
-ISR (PCINT1_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 1, PCMSK1 ); }
-ISR (PCINT2_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 2, PCMSK2 ); }
+ISR (PCINT0_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 0, PCMSK0, PINB & B00111111 ); }
+ISR (PCINT1_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 1, PCMSK1, PINC & B00111111 ); }
+ISR (PCINT2_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 2, PCMSK2, PIND ); }
 #endif
 
 int Atm_mc_receiver::translate( int pch ) { // pch = physical channel no

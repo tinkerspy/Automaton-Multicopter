@@ -92,7 +92,7 @@ Atm_pid& Atm_pid::sp( float setPoint ) { // TODO: While in HOLD ignore setPoint 
   if ( Machine::state() ) {
     this->setPoint = setPoint;
   } else {
-    this->controlVariable - setPoint;
+    this->controlVariable = setPoint;
     connectors[ON_CHANGE].push( setPoint, 0 ); // Open loop mode (CV = SP): units!!!!
   }
   return *this;

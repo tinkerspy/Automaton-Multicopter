@@ -58,7 +58,7 @@ class Atm_mc_receiver: public Machine {
   
   Atm_mc_receiver& mapping( int pch0 = -1, int pch1 = -1, int pch2 = -1, int pch3 = -1, int pch4 = -1, int pch5 = -1 );
   static Atm_mc_receiver * instance;
-  void register_pin_change_pwm( byte int_no, byte mask );
+  void register_pin_change_pwm( byte int_no, byte int_mask, byte bits );
   
  private:
   enum { ENT_CHANGED }; // ACTIONS
