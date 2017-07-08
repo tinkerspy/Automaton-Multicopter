@@ -18,6 +18,7 @@ Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
     analogWrite( motor_pin, 0 );
     servo_mode = 0;
   }
+  speed( 0 );
   return *this;          
 }
 
