@@ -17,7 +17,7 @@ Atm_mpu6050& Atm_mpu6050::begin( int sample_rate ) {
   Wire.begin();
   Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
   mpu6050.initialize();
-  devStatus = mpu6050.dmpInitialize();
+  int devStatus = mpu6050.dmpInitialize();
   // supply your own gyro offsets here, scaled for min sensitivity
   mpu6050.setXGyroOffset(220);
   mpu6050.setYGyroOffset(76);
@@ -63,6 +63,7 @@ int Atm_mpu6050::event( int id ) {
 void Atm_mpu6050::action( int id ) {
   Quaternion q;
   VectorFloat gravity;
+  uint8_t fifoBuffer[42];
   float tmp[3];  
   switch ( id ) {
     case ENT_INIT:

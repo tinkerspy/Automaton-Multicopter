@@ -11,7 +11,7 @@ typedef struct {
     float value, last_value;
     int last_output;    
     int min_out, max_out;
-    int logical, reverse;
+    byte logical, reverse;
 } axis_struct;
 
 class Atm_mpu6050: public Machine {
@@ -54,12 +54,9 @@ class Atm_mpu6050: public Machine {
   MPU6050 mpu6050;
   atm_timer_millis timer;
 
-  uint8_t devStatus, mpuIntStatus;
   uint16_t packetSize, fifoCount;
-  uint8_t fifoBuffer[64];
-  bool dmpReady = false;
   axis_struct axis[3];
-  int physical[3];  
+  byte physical[3];  
 };
 
 /*
