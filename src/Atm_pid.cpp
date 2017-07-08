@@ -16,9 +16,9 @@ Atm_pid& Atm_pid::begin( int sample_rate_ms, float Kp, float Ki, float Kd, float
   // clang-format on
   timer.set( sample_rate_ms );
   Machine::begin( state_table, ELSE );
-  this->Kp = Kp;
-  this->Ki = Ki;
-  this->Kd = Kd;
+  this->KpValue = Kp;
+  this->KiValue = Ki;
+  this->KdValue = Kd;
   windup_guard = windup;
   reset();
   return *this;          
@@ -85,7 +85,7 @@ float Atm_pid::calculate( float setPoint, float processVariable ) {
   integral = constrain( integral, -windup_guard, +windup_guard ); 
   derivative = ( error - last_error ) / float( timer.value );    
   last_error = error;          
-  return ( Kp * error ) + ( Ki * integral ) + ( Kd * derivative );   
+  return ( KpValue * error ) + ( KiValue * integral ) + ( KdValue * derivative );   
 }
 
 Atm_pid& Atm_pid::sp( float setPoint ) { // TODO: While in HOLD ignore setPoint changes
@@ -100,6 +100,44 @@ Atm_pid& Atm_pid::sp( float setPoint ) { // TODO: While in HOLD ignore setPoint 
 Atm_pid& Atm_pid::pv( float processVariable ) {
   this->processVariable = processVariable;
   return *this;
+}
+float Atm_pid::sp( void ) {
+  return this->setPoint;
+}
+
+float Atm_pid::pv( void ) {
+  return this->processVariable;
+}
+
+Atm_pid& Atm_pid::Kp( float KpValue ) {
+  this->KpValue = KpValue;
+  return *this;  
+}
+
+Atm_pid& Atm_pid::Ki( float KiValue ) {
+  this->KiValue = KiValue;
+  return *this;  
+}
+
+Atm_pid& Atm_pid::Kd( float KdValue ) {
+  this->KdValue = KdValue;
+  return *this;  
+}
+
+float Atm_pid::cv( void ) {
+  return this->controlVariable;
+}
+
+float Atm_pid::Kp( void ) {
+  return this->KpValue;
+}
+
+float Atm_pid::Ki( void ) {
+  return this->KiValue;
+}
+
+float Atm_pid::Kd( void ) {
+  return this->KdValue;
 }
 
 /* Optionally override the default state() method

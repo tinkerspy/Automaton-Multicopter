@@ -20,6 +20,15 @@ class Atm_pid: public Machine {
   Atm_pid& stop( void );
   Atm_pid& sp( float setPoint );
   Atm_pid& pv( float processValue );
+  Atm_pid& Kp( float KpValue );
+  Atm_pid& Ki( float KiValue );
+  Atm_pid& Kd( float KdValue );
+  float sp( void );
+  float pv( void );
+  float cv( void );
+  float Kp( void );
+  float Ki( void );
+  float Kd( void );
   Atm_pid& reset();
 
   
@@ -31,7 +40,7 @@ class Atm_pid: public Machine {
   void action( int id ); 
   float calculate( float setPoint, float processVariable );
   atm_timer_millis timer;
-  float Kp, Ki, Kd;
+  float KpValue, KiValue, KdValue;
   float setPoint, processVariable, controlVariable, last_cv;
   float integral, derivative, last_error; 
   float windup_guard;
