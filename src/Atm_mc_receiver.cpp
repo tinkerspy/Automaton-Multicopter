@@ -162,8 +162,8 @@ void Atm_mc_receiver::register_pin_change_pwm( byte int_no, byte int_mask, byte 
 // The Uno's micros() funtion has only a 4 us resolution
 // This can be fixed if necessary with a timer interrupt
 
-ISR (PCINT0_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 0, PCMSK0, PINB & B00111111 ); }
-ISR (PCINT1_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 1, PCMSK1, PINC & B00111111 ); }
+ISR (PCINT0_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 0, PCMSK0, PINB ); }
+ISR (PCINT1_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 1, PCMSK1, PINC ); }
 ISR (PCINT2_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 2, PCMSK2, PIND ); }
 #endif
 
