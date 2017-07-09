@@ -5,7 +5,7 @@
 // Waarsch 180000..180000 (buiten int16_t range)
 // YAW rate waarden kloppen dus waarsch van geen kant!
 
-Atm_mpu6050& Atm_mpu6050::begin( int sample_rate ) {
+Atm_mpu6050& Atm_mpu6050::begin( int sample_rate_ms ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
     /*            ON_ENTER    ON_LOOP  ON_EXIT    EVT_SAMPLE  EVT_CHANGE  EVT_TIMER  EVT_START  EVT_STOP  EVT_INITDONE  ELSE */
@@ -19,7 +19,8 @@ Atm_mpu6050& Atm_mpu6050::begin( int sample_rate ) {
   // clang-format on
   Machine::begin( state_table, ELSE );
   Wire.begin();
-  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  Wire.setClock(500000L);
+//  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
   mpu6050.initialize();
   int devStatus = mpu6050.dmpInitialize();
   // supply your own gyro offsets here, scaled for min sensitivity
@@ -31,7 +32,7 @@ Atm_mpu6050& Atm_mpu6050::begin( int sample_rate ) {
       mpu6050.setDMPEnabled(true);
       packetSize = mpu6050.dmpGetFIFOPacketSize();
   } 
-  timer.set( sample_rate );
+  timer.set( sample_rate_ms );
   // Defaults
   mapping( YAW, PITCH, ROLL );
   range( -90, +90 );
@@ -47,7 +48,7 @@ int Atm_mpu6050::event( int id ) {
   switch ( id ) {
     case EVT_CHANGE:
       return axis[0].value != axis[0].last_value || axis[1].value != axis[1].last_value || axis[2].value != axis[2].last_value;
-    case EVT_TIMER:
+    case EVT_TIMER:      
       return timer.expired( this );
     case EVT_SAMPLE:
       fifoCount = mpu6050.getFIFOCount(); 
@@ -74,10 +75,10 @@ void Atm_mpu6050::action( int id ) {
     case ENT_INIT:
       return;
     case ENT_SAMPLE:
-      while ( fifoCount >= packetSize ) { // empty the fifo
+      //while ( fifoCount >= packetSize ) { // empty the fifo/slows things down to a crawl
         mpu6050.getFIFOBytes( fifoBuffer, packetSize );
         fifoCount -= packetSize; 
-      }
+      //}
       mpu6050.dmpGetQuaternion( &q, fifoBuffer );
       mpu6050.dmpGetGravity( &gravity, &q );
       mpu6050.dmpGetYawPitchRoll( tmp, &q, &gravity );

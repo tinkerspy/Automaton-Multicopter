@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Automaton.h>
+#include <Wire.h>
 
 
 #include "helper_3dmath.h"
@@ -24,7 +25,7 @@ class Atm_mpu6050: public Machine {
   enum { IDLE, INIT, RUN, CHECK, SAMPLE, CHANGED }; // STATES
   enum { EVT_SAMPLE, EVT_CHANGE, EVT_TIMER, EVT_START, EVT_STOP, EVT_INITDONE, ELSE }; // EVENTS
   Atm_mpu6050( void ) : Machine() {};
-  Atm_mpu6050& begin( int sample_rate );
+  Atm_mpu6050& begin( int sample_rate_ms ); // sample_rate_ms <= 5 to keep up with the fifo!
   Atm_mpu6050& trace( Stream & stream );
   Atm_mpu6050& trigger( int event );
   int state( void );
@@ -50,7 +51,8 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& calibrate( int ypr );
   Atm_mpu6050& stabilize( int ypr, uint16_t win_size, uint16_t win_millis );
   Atm_mpu6050& stabilize( uint16_t win_size, uint16_t win_millis );
-
+uint16_t packetSize, fifoCount;
+  
  private:
   enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED }; // ACTIONS
   enum { ON_STABILIZE, ON_CHANGE, CONN_MAX = 3 }; // CONNECTORS
@@ -61,7 +63,6 @@ class Atm_mpu6050: public Machine {
   MPU6050 mpu6050;
   atm_timer_millis timer;
 
-  uint16_t packetSize, fifoCount;
   axis_struct axis[3];
   byte physical[3];  
   bool enable_stabilize;

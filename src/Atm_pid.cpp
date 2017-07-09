@@ -60,7 +60,6 @@ void Atm_pid::action( int id ) {
   switch ( id ) {
     case ENT_SAMPLE:
       push( connectors, ON_SAMPLE, 0, 0, 0 ); 
-      connectors[ON_SAMPLE].push( 0, 0 ); 
       controlVariable = calculate( setPoint, processVariable );
       return;
     case ENT_CHANGED:
