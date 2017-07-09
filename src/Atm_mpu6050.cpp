@@ -83,20 +83,20 @@ void Atm_mpu6050::action( int id ) {
       mpu6050.dmpGetGravity( &gravity, &q );
       mpu6050.dmpGetYawPitchRoll( tmp, &q, &gravity );
       for ( int ax = 0; ax < 3; ax ++ ) {
-        byte cur_second =  ( millis() / axis[ax].rate_millis ) % 60;
+        byte cur_second =  ( millis() / rate_millis ) % 60;
         int16_t v = round( ( tmp[ax] * 180.0/M_PI ) * 100.0 );
-        if ( cur_second != axis[ax].rate_cur_second ) {
-          axis[ax].rate_fin_counter = axis[ax].rate_cur_counter;
-          axis[ax].rate_cur_second = cur_second;
-          axis[ax].rate_cur_counter = 0;
+        if ( cur_second != rate_cur_second ) {
+          rate_fin_counter = rate_cur_counter;
+          rate_cur_second = cur_second;
+          rate_cur_counter = 0;
         }
-        if ( abs( axis[ax].rate_pos - v ) > axis[ax].rate_win ) {
+        if ( abs( axis[ax].rate_pos - v ) > rate_win ) {
           axis[ax].rate_pos = v;
-          axis[ax].rate_cur_counter++;
+          rate_cur_counter++;
         }          
         axis[ax].value = v;
       }
-      if ( enable_stabilize && axis[0].rate_fin_counter + axis[1].rate_fin_counter + axis[2].rate_fin_counter == 0 ) {
+      if ( enable_stabilize && rate_fin_counter  == 0 ) {
         push( connectors, ON_STABILIZE, 0, 0, 0 );    
         enable_stabilize = false;
       }    
@@ -124,29 +124,19 @@ int Atm_mpu6050::read( int ypr ) {
 }
 
 int Atm_mpu6050::rate( void ) {
-  return rate( 0 ) + rate( 1 ) + rate( 2 );
-}
-
-int Atm_mpu6050::rate( int ypr ) {
-  return axis[physical[ypr]].rate_fin_counter;
-}
-
-Atm_mpu6050& Atm_mpu6050::stabilize( int ypr, uint16_t win_size, uint16_t win_millis ) {
-  ypr = physical[ypr];
-  axis[ypr].rate_win = win_size;  
-  axis[ypr].rate_millis = win_millis;  
-  axis[ypr].rate_pos = 0;
-  axis[ypr].rate_cur_counter = 0xFF;
-  axis[ypr].rate_fin_counter = 0xFF;
-  axis[ypr].rate_cur_second = ( millis() / 1000 ) % 60;
-  enable_stabilize = true;
-  return *this;
+  return rate_fin_counter;
 }
 
 Atm_mpu6050& Atm_mpu6050::stabilize( uint16_t win_size, uint16_t win_millis ) {
-  for ( int i = YAW; i < ROLL + 1; i++ ) {
-    stabilize( i, win_size, win_millis );
+  for ( int ax = YAW; ax < ROLL + 1; ax++ ) {
+    axis[ax].rate_pos = 0;
   }
+  rate_win = win_size;  
+  rate_millis = win_millis;  
+  rate_cur_counter = 0xFF;
+  rate_fin_counter = 0xFF;
+  rate_cur_second = ( millis() / 1000 ) % 60;
+  enable_stabilize = true;
   return *this;
 }
 

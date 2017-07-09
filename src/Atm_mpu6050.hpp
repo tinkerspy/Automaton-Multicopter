@@ -12,8 +12,7 @@ typedef struct {
     int16_t value, last_value;
     int16_t last_output;    
     int16_t min_out, max_out, offset;
-    int16_t rate_win, rate_pos, rate_fin_counter, rate_cur_counter, rate_millis; 
-    byte rate_cur_second;
+    int16_t rate_pos;
     byte logical, reverse;
 } axis_struct;
 
@@ -40,7 +39,6 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
 
   int read( int ypr );
-  int rate( int ypr );
   int rate( void );
   Atm_mpu6050& range( int ypr, int toLow, int toHigh );
   Atm_mpu6050& range( int toLow, int toHigh );
@@ -49,7 +47,6 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& mapping( int axis0, int axis1, int axis2 );
   Atm_mpu6050& calibrate( int ypr, int v );
   Atm_mpu6050& calibrate( int ypr );
-  Atm_mpu6050& stabilize( int ypr, uint16_t win_size, uint16_t win_millis );
   Atm_mpu6050& stabilize( uint16_t win_size, uint16_t win_millis );
 uint16_t packetSize, fifoCount;
   
@@ -66,6 +63,9 @@ uint16_t packetSize, fifoCount;
   axis_struct axis[3];
   byte physical[3];  
   bool enable_stabilize;
+  int16_t rate_win, rate_pos, rate_fin_counter, rate_cur_counter, rate_millis; 
+  byte rate_cur_second;
+
 };
 
 /*
