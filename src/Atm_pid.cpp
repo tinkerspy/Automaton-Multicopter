@@ -89,6 +89,7 @@ float Atm_pid::calculate( float setPoint, float processVariable ) {
 }
 
 Atm_pid& Atm_pid::sp( float setPoint ) { // TODO: While in HOLD ignore setPoint changes
+  // No constrain() here, on purpose: pid is generic
   if ( Machine::state() ) {
     this->setPoint = setPoint;
   } else {

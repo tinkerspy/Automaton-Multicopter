@@ -5,6 +5,9 @@
  
 // WARNING: You can only run one instance of this class per sketch 
 
+// TODO: After turning off the transmitter, the object should stop sending updates (?) read should return -1???
+// onConnect handler (state connect/disconnect)???
+
 Atm_mc_receiver& Atm_mc_receiver::begin( int p0, int p1, int p2, int p3, int p4, int p5 ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
@@ -131,7 +134,8 @@ void Atm_mc_receiver::set_channel( int ch, int pin ) {
   }
 }
 
-// Process pin change interrupts and calculate pulse times (PWM mode)
+// Process pin change interrupts and calculate pulse times in PWM mode 
+
 
 void Atm_mc_receiver::register_pin_change_pwm( byte int_no, byte int_mask, byte bits ) { 
   byte diff, p;
@@ -165,6 +169,7 @@ void Atm_mc_receiver::register_pin_change_pwm( byte int_no, byte int_mask, byte 
 ISR (PCINT0_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 0, PCMSK0, PINB ); }
 ISR (PCINT1_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 1, PCMSK1, PINC ); }
 ISR (PCINT2_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 2, PCMSK2, PIND ); }
+
 #endif
 
 int Atm_mc_receiver::translate( int pch ) { // pch = physical channel no
@@ -326,22 +331,22 @@ int Atm_mc_receiver::state( void ) {
  */
 
  Atm_mc_receiver& Atm_mc_receiver::onChange( Machine& machine, int event ) {
-  onPush( connectors, ON_CHANGE, 0, 3, 1, machine, event );
+  onPush( connectors, ON_CHANGE, 0, CHANNELS, 1, machine, event );
   return *this;
 }
 
 Atm_mc_receiver& Atm_mc_receiver::onChange( atm_cb_push_t callback, int idx ) {
-  onPush( connectors, ON_CHANGE, 0, 3, 1, callback, idx );
+  onPush( connectors, ON_CHANGE, 0, CHANNELS, 1, callback, idx );
   return *this;
 }
 
 Atm_mc_receiver& Atm_mc_receiver::onChange( int sub, Machine& machine, int event ) {
-  onPush( connectors, ON_CHANGE, sub, 3, 0, machine, event );
+  onPush( connectors, ON_CHANGE, sub, CHANNELS, 0, machine, event );
   return *this;
 }
 
 Atm_mc_receiver& Atm_mc_receiver::onChange( int sub, atm_cb_push_t callback, int idx ) {
-  onPush( connectors, ON_CHANGE, sub, 3, 0, callback, idx );
+  onPush( connectors, ON_CHANGE, sub, CHANNELS, 0, callback, idx );
   return *this;
 }
 
