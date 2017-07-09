@@ -23,13 +23,13 @@ class Atm_mc_esc {
   Atm_mc_esc& speed( int v );
   int speed( );
  private:
-  int motor_pin; 
-  int motor_cur_speed;
 #ifdef TEENSY_HW_PWM
+  int motor_cur_speed;
+  int motor_pin; 
   int pwm1000width;
 #endif  
   Servo servo;  
-  int servo_mode;
+  bool servo_mode;
  
 };
 

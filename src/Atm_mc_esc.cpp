@@ -4,19 +4,19 @@
 // Uses the Servo library on other platforms
  
 Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
-  motor_pin = p;
-  pinMode( motor_pin, OUTPUT );
   if ( frequency == -1 ) {
     servo.attach( p );
-    servo_mode = 1;
+    servo_mode = true;
   } else {
 #ifdef TEENSY_HW_PWM
+    motor_pin = p;
+    pinMode( p, OUTPUT );
     analogWriteFrequency( motor_pin, frequency );
     analogWriteResolution( 16 ); // Global effect!
     pwm1000width = ( frequency / 50 ) * PWM_50HZ_1000US;
-#endif    
     analogWrite( motor_pin, 0 );
-    servo_mode = 0;
+#endif    
+    servo_mode = false;
   }
   speed( 0 );
   return *this;          
@@ -24,7 +24,7 @@ Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
 
 
 Atm_mc_esc& Atm_mc_esc::speed( int v ) {
-  motor_cur_speed = constrain( v, 0, 1000 );
+  int motor_cur_speed = constrain( v, 0, 1000 );
   if ( servo_mode ) {
     servo.writeMicroseconds( motor_cur_speed + 1000 );
   } else {
@@ -36,6 +36,10 @@ Atm_mc_esc& Atm_mc_esc::speed( int v ) {
 }
 
 int Atm_mc_esc::speed() {
+#ifdef TEENSY_HW_PWM
   return motor_cur_speed;
+#else
+  return servo.readMicroseconds();
+#endif
 }
 

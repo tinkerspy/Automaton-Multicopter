@@ -147,6 +147,7 @@ Atm_mpu6050& Atm_mpu6050::calibrate( int ypr, int v ) {
 
 Atm_mpu6050& Atm_mpu6050::calibrate( int ypr ) {
   axis[physical[ypr]].offset = - axis[physical[ypr]].value;
+  axis[physical[ypr]].last_value = 0;
   return *this;
 }
 
