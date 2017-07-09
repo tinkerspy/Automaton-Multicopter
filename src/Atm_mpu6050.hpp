@@ -11,6 +11,8 @@ typedef struct {
     int16_t value, last_value;
     int16_t last_output;    
     int16_t min_out, max_out, offset;
+    int16_t rate_win, rate_pos, rate_fin_counter, rate_cur_counter, rate_millis; 
+    byte rate_cur_second;
     byte logical, reverse;
 } axis_struct;
 
@@ -29,6 +31,8 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& start( void );
   Atm_mpu6050& stop( void );
   
+  Atm_mpu6050& onStabilize( Machine& machine, int event = 0 );
+  Atm_mpu6050& onStabilize( atm_cb_push_t callback, int idx = 0 );
   Atm_mpu6050& onChange( Machine& machine, int event = 0 );
   Atm_mpu6050& onChange( atm_cb_push_t callback, int idx = 0 );
   Atm_mpu6050& onChange( int sub, Machine& machine, int event = 0 );
@@ -43,10 +47,13 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& angle( int max_angle );
   Atm_mpu6050& mapping( int axis0, int axis1, int axis2 );
   Atm_mpu6050& calibrate( int ypr, int v );
+  Atm_mpu6050& calibrate( int ypr );
+  Atm_mpu6050& stabilize( int ypr, uint16_t win_size, uint16_t win_millis );
+  Atm_mpu6050& stabilize( uint16_t win_size, uint16_t win_millis );
 
  private:
   enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED }; // ACTIONS
-  enum { ON_CHANGE, CONN_MAX = 3 }; // CONNECTORS
+  enum { ON_STABILIZE, ON_CHANGE, CONN_MAX = 3 }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
   int event( int id ); 
   void action( int id );
@@ -57,6 +64,7 @@ class Atm_mpu6050: public Machine {
   uint16_t packetSize, fifoCount;
   axis_struct axis[3];
   byte physical[3];  
+  bool enable_stabilize;
 };
 
 /*

@@ -1,6 +1,10 @@
 #include "Atm_mpu6050.hpp"
 #include "MPU6050_6Axis_MotionApps20.h"
 
+// FIXME: De YAW rate heeft een grotere range dan -9000..9000 maar wordt hier afgeknepen!
+// Waarsch 180000..180000 (buiten int16_t range)
+// YAW rate waarden kloppen dus waarsch van geen kant!
+
 Atm_mpu6050& Atm_mpu6050::begin( int sample_rate ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
@@ -31,6 +35,7 @@ Atm_mpu6050& Atm_mpu6050::begin( int sample_rate ) {
   // Defaults
   mapping( YAW, PITCH, ROLL );
   range( -90, +90 );
+  stabilize( 5, 5000 );
   return *this;          
 }
 
@@ -76,9 +81,24 @@ void Atm_mpu6050::action( int id ) {
       mpu6050.dmpGetQuaternion( &q, fifoBuffer );
       mpu6050.dmpGetGravity( &gravity, &q );
       mpu6050.dmpGetYawPitchRoll( tmp, &q, &gravity );
-      axis[0].value = round( ( tmp[0] * 180.0/M_PI ) * 100.0 );
-      axis[1].value = round( ( tmp[1] * 180.0/M_PI ) * 100.0 );
-      axis[2].value = round( ( tmp[2] * 180.0/M_PI ) * 100.0 );
+      for ( int ax = 0; ax < 3; ax ++ ) {
+        byte cur_second =  ( millis() / axis[ax].rate_millis ) % 60;
+        int16_t v = round( ( tmp[ax] * 180.0/M_PI ) * 100.0 );
+        if ( cur_second != axis[ax].rate_cur_second ) {
+          axis[ax].rate_fin_counter = axis[ax].rate_cur_counter;
+          axis[ax].rate_cur_second = cur_second;
+          axis[ax].rate_cur_counter = 0;
+        }
+        if ( abs( axis[ax].rate_pos - v ) > axis[ax].rate_win ) {
+          axis[ax].rate_pos = v;
+          axis[ax].rate_cur_counter++;
+        }          
+        axis[ax].value = v;
+      }
+      if ( enable_stabilize && axis[0].rate_fin_counter + axis[1].rate_fin_counter + axis[2].rate_fin_counter == 0 ) {
+        push( connectors, ON_STABILIZE, 0, 0, 0 );    
+        enable_stabilize = false;
+      }    
       return;
     case ENT_CHANGED:
       for ( int i = YAW; i < ROLL + 1; i++ ) {
@@ -93,6 +113,8 @@ void Atm_mpu6050::action( int id ) {
   }
 }
 
+// FIXME: De YAW rate heeft een grotere range dan -9000..9000 maar wordt hier afgeknepen!
+
 int Atm_mpu6050::read( int ypr ) {
   ypr = physical[ypr];
   int v = axis[ypr].value + axis[ypr].offset;
@@ -100,8 +122,40 @@ int Atm_mpu6050::read( int ypr ) {
   return map( constrain( v, -9000, 9000 ), -9000, 9000, axis[ypr].min_out, axis[ypr].max_out );    
 }
 
+int Atm_mpu6050::rate( void ) {
+  return rate( 0 ) + rate( 1 ) + rate( 2 );
+}
+
+int Atm_mpu6050::rate( int ypr ) {
+  return axis[physical[ypr]].rate_fin_counter;
+}
+
+Atm_mpu6050& Atm_mpu6050::stabilize( int ypr, uint16_t win_size, uint16_t win_millis ) {
+  ypr = physical[ypr];
+  axis[ypr].rate_win = win_size;  
+  axis[ypr].rate_millis = win_millis;  
+  axis[ypr].rate_pos = 0;
+  axis[ypr].rate_cur_counter = 0xFF;
+  axis[ypr].rate_fin_counter = 0xFF;
+  axis[ypr].rate_cur_second = ( millis() / 1000 ) % 60;
+  enable_stabilize = true;
+  return *this;
+}
+
+Atm_mpu6050& Atm_mpu6050::stabilize( uint16_t win_size, uint16_t win_millis ) {
+  for ( int i = YAW; i < ROLL + 1; i++ ) {
+    stabilize( i, win_size, win_millis );
+  }
+  return *this;
+}
+
 Atm_mpu6050& Atm_mpu6050::calibrate( int ypr, int v ) {
   axis[physical[ypr]].offset = v;
+  return *this;
+}
+
+Atm_mpu6050& Atm_mpu6050::calibrate( int ypr ) {
+  axis[physical[ypr]].offset = - axis[physical[ypr]].value;
   return *this;
 }
 
@@ -183,6 +237,16 @@ Atm_mpu6050& Atm_mpu6050::stop() {
 /*
  * onChange() push connector variants ( slots 1, autostore 0, broadcast 0 )
  */
+
+ Atm_mpu6050& Atm_mpu6050::onStabilize( Machine& machine, int event ) {
+  onPush( connectors, ON_STABILIZE, 0, 1, 1, machine, event );
+  return *this;
+}
+
+Atm_mpu6050& Atm_mpu6050::onStabilize( atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_STABILIZE, 0, 1, 1, callback, idx );
+  return *this;
+}
 
  Atm_mpu6050& Atm_mpu6050::onChange( Machine& machine, int event ) {
   onPush( connectors, ON_CHANGE, 0, 3, 1, machine, event );
