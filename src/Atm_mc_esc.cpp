@@ -3,6 +3,7 @@
 // Uses the built-in hardware PWM on teensy
 // Uses the Servo library on other platforms
 
+// Separate code for Teensy & UNO (no extra memory use on UNO possible) drop: servo_mode
  
 Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
   if ( frequency == -1 ) {

@@ -36,7 +36,7 @@ Atm_mpu6050& Atm_mpu6050::begin( int sample_rate_ms ) {
   // Defaults
   mapping( YAW, PITCH, ROLL );
   range( -90, +90 );
-  stabilize( 5, 5000 );
+  //stabilize( 5, 5000 );
   return *this;          
 }
 
@@ -147,7 +147,9 @@ Atm_mpu6050& Atm_mpu6050::calibrate( int ypr, int v ) {
 
 Atm_mpu6050& Atm_mpu6050::calibrate( int ypr ) {
   axis[physical[ypr]].offset = - axis[physical[ypr]].value;
-  axis[physical[ypr]].last_value = 0;
+  axis[physical[ypr]].last_value = 0xFF; // Force update event
+  axis[physical[ypr]].last_output = 0xFF; 
+  axis[physical[ypr]].value = 0xFF; 
   return *this;
 }
 
