@@ -47,7 +47,7 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& mapping( int axis0, int axis1, int axis2 );
   Atm_mpu6050& calibrate( int ypr, int v );
   Atm_mpu6050& calibrate( int ypr );
-  Atm_mpu6050& stabilize( uint16_t win_size, uint16_t win_millis );
+  Atm_mpu6050& stabilize( uint16_t win_size = 5, uint16_t win_millis = 5000 );
 
   private:
   enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED }; // ACTIONS

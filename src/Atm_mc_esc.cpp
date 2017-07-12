@@ -2,12 +2,14 @@
 
 // Uses the built-in hardware PWM on teensy
 // Uses the Servo library on other platforms
+
   
 #ifdef TEENSY_FAST_PWM
 
 // Servo + Fast PWM option on Teensy 3.x/LC platforms.
 
-Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency ) {
+ 
+Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
   if ( frequency == -1 ) {
     servo.attach( p );
     servo_mode = true;

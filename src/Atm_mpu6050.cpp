@@ -36,7 +36,6 @@ Atm_mpu6050& Atm_mpu6050::begin( int sample_rate_ms ) {
   // Defaults
   mapping( YAW, PITCH, ROLL );
   range( -90, +90 );
-  stabilize( 5, 5000 );
   return *this;          
 }
 
@@ -102,7 +101,7 @@ void Atm_mpu6050::action( int id ) {
     case ENT_CHANGED:
       for ( int i = YAW; i < ROLL + 1; i++ ) {
         int v = read( i );
-        if ( v != axis[i].last_output ) {
+        if ( v != axis[i].last_output && !enable_stabilize ) {
           push( connectors, ON_CHANGE, axis[i].logical, v, axis[i].logical );    
           axis[i].last_output = v;
           axis[i].last_value = axis[i].value;
@@ -126,7 +125,7 @@ int Atm_mpu6050::rate( void ) {
   return rate_fin_counter;
 }
 
-Atm_mpu6050& Atm_mpu6050::stabilize( uint16_t win_size, uint16_t win_millis ) {
+Atm_mpu6050& Atm_mpu6050::stabilize( uint16_t win_size /* = 5 */, uint16_t win_millis /* = 5000 */ ) {
   for ( int ax = YAW; ax < ROLL + 1; ax++ ) {
     axis[ax].rate_pos = 0;
   }
@@ -146,7 +145,9 @@ Atm_mpu6050& Atm_mpu6050::calibrate( int ypr, int v ) {
 
 Atm_mpu6050& Atm_mpu6050::calibrate( int ypr ) {
   axis[physical[ypr]].offset = - axis[physical[ypr]].value;
-  axis[physical[ypr]].last_value = 0;
+  axis[physical[ypr]].last_value = 0xFF; // Force update event
+  axis[physical[ypr]].last_output = 0xFF; 
+  axis[physical[ypr]].value = 0xFF; 
   return *this;
 }
 
