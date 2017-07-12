@@ -70,15 +70,13 @@ void Atm_mpu6050::action( int id ) {
   Quaternion q;
   VectorFloat gravity;
   uint8_t fifoBuffer[42];
-  float tmp[3];  
+  float tmp[3];
   switch ( id ) {
     case ENT_INIT:
       return;
     case ENT_SAMPLE:
-      //while ( fifoCount >= packetSize ) { // empty the fifo/slows things down to a crawl
-        mpu6050.getFIFOBytes( fifoBuffer, packetSize );
-        fifoCount -= packetSize; 
-      //}
+      mpu6050.getFIFOBytes( fifoBuffer, packetSize );
+      fifoCount -= packetSize; 
       mpu6050.dmpGetQuaternion( &q, fifoBuffer );
       mpu6050.dmpGetGravity( &gravity, &q );
       mpu6050.dmpGetYawPitchRoll( tmp, &q, &gravity );
@@ -99,7 +97,7 @@ void Atm_mpu6050::action( int id ) {
       if ( enable_stabilize && rate_fin_counter  == 0 ) {
         push( connectors, ON_STABILIZE, 0, 0, 0 );    
         enable_stabilize = false;
-      }    
+      } 
       return;
     case ENT_CHANGED:
       for ( int i = YAW; i < ROLL + 1; i++ ) {
@@ -122,6 +120,7 @@ int Atm_mpu6050::read( int ypr ) {
   if ( axis[ypr].reverse ) v = v * -1;
   return map( constrain( v, -9000, 9000 ), -9000, 9000, axis[ypr].min_out, axis[ypr].max_out );    
 }
+
 
 int Atm_mpu6050::rate( void ) {
   return rate_fin_counter;
