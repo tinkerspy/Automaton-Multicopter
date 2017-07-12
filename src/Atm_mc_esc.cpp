@@ -3,7 +3,34 @@
 // Uses the built-in hardware PWM on teensy
 // Uses the Servo library on other platforms
  
+ 
+
 Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency /* = 50 */ ) {
+  servo.attach( p );
+  range( 1000, 2000 );
+  speed( 0 );
+  return *this;          
+}
+ 
+Atm_mc_esc& Atm_mc_esc::speed( int v ) {
+  int motor_cur_speed = map( constrain( v, 0, 1000 ), 0, 1000, min_range, max_range );
+  servo.writeMicroseconds( motor_cur_speed );
+  return *this;
+}
+
+int Atm_mc_esc::speed() {
+  return map( servo.readMicroseconds(), min_range, max_range, 0, 1000 );
+}
+
+Atm_mc_esc& Atm_mc_esc::range( int min_range, int max_range ) {
+  this->min_range = min_range;
+  this->max_range = max_range;
+  return *this;
+}
+
+/* 
+ 
+Atm_mc_esc& Atm_mc_esc::begin( int p, int frequency ) {
   if ( frequency == -1 ) {
     servo.attach( p );
     servo_mode = true;
@@ -43,3 +70,4 @@ int Atm_mc_esc::speed() {
 #endif
 }
 
+*/

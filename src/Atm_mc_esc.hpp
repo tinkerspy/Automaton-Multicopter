@@ -19,6 +19,22 @@
 class Atm_mc_esc {
 
  public:
+  Atm_mc_esc& begin(  int p, int frequency = -1 ); 
+  Atm_mc_esc& speed( int v );
+  Atm_mc_esc& range( int min_range, int max_range );
+  int speed( );
+ private:
+  Servo servo;  
+  int16_t min_range, max_range;
+  
+};
+
+
+/*
+
+class Atm_mc_esc {
+
+ public:
    Atm_mc_esc& begin(  int p, int frequency = -1 ); // Stick to multiples of 50, max 400Hz (-1 use Servo library)
   Atm_mc_esc& speed( int v );
   int speed( );
@@ -33,3 +49,4 @@ class Atm_mc_esc {
  
 };
 
+*/

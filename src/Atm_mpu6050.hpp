@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Automaton.h>
-#include <Wire.h>
 
 
 #include "helper_3dmath.h"
@@ -24,21 +23,22 @@ class Atm_mpu6050: public Machine {
   enum { IDLE, INIT, RUN, CHECK, SAMPLE, CHANGED }; // STATES
   enum { EVT_SAMPLE, EVT_CHANGE, EVT_TIMER, EVT_START, EVT_STOP, EVT_INITDONE, ELSE }; // EVENTS
   Atm_mpu6050( void ) : Machine() {};
-  Atm_mpu6050& begin( int sample_rate_ms ); // sample_rate_ms <= 5 to keep up with the fifo!
+  Atm_mpu6050& begin( int sample_rate );
   Atm_mpu6050& trace( Stream & stream );
   Atm_mpu6050& trigger( int event );
   int state( void );
   Atm_mpu6050& start( void );
   Atm_mpu6050& stop( void );
   
-  Atm_mpu6050& onStabilize( Machine& machine, int event = 0 );
-  Atm_mpu6050& onStabilize( atm_cb_push_t callback, int idx = 0 );
   Atm_mpu6050& onChange( Machine& machine, int event = 0 );
   Atm_mpu6050& onChange( atm_cb_push_t callback, int idx = 0 );
   Atm_mpu6050& onChange( int sub, Machine& machine, int event = 0 );
   Atm_mpu6050& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
+  Atm_mpu6050& onStabilize( Machine& machine, int event = 0 );
+  Atm_mpu6050& onStabilize( atm_cb_push_t callback, int idx = 0 );
 
   int read( int ypr );
+  int rate( int ypr );
   int rate( void );
   Atm_mpu6050& range( int ypr, int toLow, int toHigh );
   Atm_mpu6050& range( int toLow, int toHigh );
@@ -48,11 +48,10 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& calibrate( int ypr, int v );
   Atm_mpu6050& calibrate( int ypr );
   Atm_mpu6050& stabilize( uint16_t win_size, uint16_t win_millis );
-uint16_t packetSize, fifoCount;
-  
- private:
+
+  private:
   enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED }; // ACTIONS
-  enum { ON_STABILIZE, ON_CHANGE, CONN_MAX = 3 }; // CONNECTORS
+  enum { ON_CHANGE, ON_STABILIZE = 3, CONN_MAX }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
   int event( int id ); 
   void action( int id );
@@ -60,13 +59,13 @@ uint16_t packetSize, fifoCount;
   MPU6050 mpu6050;
   atm_timer_millis timer;
 
+  uint16_t packetSize, fifoCount;
   axis_struct axis[3];
   byte physical[3];  
+  
   bool enable_stabilize;
   int16_t rate_win, rate_pos, rate_fin_counter, rate_cur_counter, rate_millis; 
-  byte rate_cur_second;
-
-};
+  byte rate_cur_second;};
 
 /*
 Automaton::ATML::begin - Automaton Markup Language
