@@ -24,6 +24,7 @@ class Atm_pid: public Machine {
   Atm_pid& Ki( float KiValue );
   Atm_pid& Kd( float KdValue );
   Atm_pid& windup( float v );
+  Atm_pid& offset( float v );
   float sp( void );
   float pv( void );
   float cv( void );
@@ -45,7 +46,7 @@ class Atm_pid: public Machine {
   float KpValue, KiValue, KdValue;
   float setPoint, processVariable, controlVariable, last_cv;
   float integral, derivative, last_error; 
-  float windup_guard;
+  float windup_guard, output_offset;
 
 
 };
