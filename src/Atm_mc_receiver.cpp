@@ -11,12 +11,12 @@
 Atm_mc_receiver& Atm_mc_receiver::begin( int p0, int p1, int p2, int p3, int p4, int p5 ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
-    /*                ON_ENTER    ON_LOOP  ON_EXIT  EVT_WAIT EVT_TIMER  EVT_START EVT_STOP EVT_TOGGLE EVT_CHANGED ELSE */
-    /*  IDLE    */          -1, ATM_SLEEP,      -1,       -1,       -1,     WAIT,      -1,       RUN,         -1,  -1,
-    /*  WAIT    */          -1,        -1,      -1,    PAUSE,       -1,       -1,    IDLE,      IDLE,         -1,  -1,
-    /*  PAUSE   */          -1,        -1,      -1,       -1,      RUN,       -1,    IDLE,      IDLE,         -1,  -1,
-    /*  RUN     */          -1,        -1,      -1,       -1,       -1,       -1,    IDLE,      IDLE,    CHANGED,  -1,
-    /*  CHANGED */ ENT_CHANGED,        -1,      -1,       -1,       -1,       -1,    IDLE,      IDLE,         -1, RUN,
+    /*                ON_ENTER    ON_LOOP      ON_EXIT  EVT_WAIT EVT_TIMER  EVT_START EVT_STOP EVT_TOGGLE EVT_CHANGED ELSE */
+    /*  IDLE    */          -1, ATM_SLEEP,          -1,       -1,       -1,     WAIT,      -1,       RUN,         -1,  -1,
+    /*  WAIT    */          -1,        -1,          -1,    PAUSE,       -1,       -1,    IDLE,      IDLE,         -1,  -1,
+    /*  PAUSE   */          -1,        -1, ENT_CHANGED,       -1,      RUN,       -1,    IDLE,      IDLE,         -1,  -1,
+    /*  RUN     */          -1,        -1,          -1,       -1,       -1,       -1,    IDLE,      IDLE,    CHANGED,  -1,
+    /*  CHANGED */ ENT_CHANGED,        -1,          -1,       -1,       -1,       -1,    IDLE,      IDLE,         -1, RUN,
   };
   // clang-format on
   Machine::begin( state_table, ELSE );

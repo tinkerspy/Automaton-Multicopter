@@ -9,7 +9,7 @@
 
 typedef struct {
     int min, max;
-    int value;
+    int value, raw;
     bool master;
 } input_channel_struct;
 
@@ -37,6 +37,7 @@ class Atm_mc_mixer: public Machine {
   Atm_mc_mixer& start( void );
   Atm_mc_mixer& stop( void );
   Atm_mc_mixer& set( int input_ch, int value );
+  int get( int input_ch, bool raw = false );
   Atm_mc_mixer& mix( int output_ch, int input_ch0, int input_ch1, int input_ch2, int input_ch3 );
   Atm_mc_mixer& mix( int output_ch );
   Atm_mc_mixer& input( int input_ch, int min, int max );
