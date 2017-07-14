@@ -97,7 +97,7 @@ Atm_mc_mixer& Atm_mc_mixer::master( int input_ch ) {
 int Atm_mc_mixer::calculate_output( int output_ch ) { 
   int v = 0;
   for ( int input_ch = 0; input_ch < NO_OF_INPUT_CHANNELS; input_ch++ )
-    v += input_channel[input_ch].value * ( output_channel[output_ch].mix[input_ch] / 100 );
+    v += input_channel[input_ch].value * ( output_channel[output_ch].mix[input_ch] / 100.0 );
   if ( master_input > -1 && input_channel[master_input].value == 0 ) v = 0;
   return constrain( v, 0, 1000 ); 
 }
