@@ -12,10 +12,6 @@
 
 // Source: https://github.com/FortySevenEffects/arduino_midi_library/issues/65
 
-#if defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK62FX512__) || defined(__MK66FX1M0__ )
-#define TEENSY_FAST_PWM
-#endif
-
 class Atm_mc_esc {
 
  public:
@@ -26,7 +22,7 @@ class Atm_mc_esc {
  private:
   Servo servo;  
   bool enabled;
-#ifdef TEENSY_FAST_PWM
+#ifndef __AVR_ATmega328P__
   int motor_cur_speed;
   bool servo_mode;  
   int motor_pin;

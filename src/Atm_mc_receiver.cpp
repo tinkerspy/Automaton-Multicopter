@@ -105,7 +105,7 @@ void Atm_mc_receiver::handleInterruptPPM() {
   ppm_last_pulse = micros();
 }
 
-#ifndef TEENSY
+#ifdef __AVR_ATmega328P__
 
 // Set up the pin change interrupt for a channel/pin combo
 
@@ -218,7 +218,7 @@ int Atm_mc_receiver::read( int lch, bool raw /* = 0 */ ) {
 
 Atm_mc_receiver& Atm_mc_receiver::ppm( void ) { // Pulse Position Modulation
   pinMode( channel[0].pin, INPUT_PULLUP );
-#ifdef TEENSY
+#ifndef __AVR_ATmega328P__
   if ( channel[0].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[0].pin ), []() { instance->handleInterruptPPM(); }, RISING );
   if ( channel[1].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[1].pin ) );  
   if ( channel[2].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[2].pin ) );  
@@ -239,7 +239,7 @@ Atm_mc_receiver& Atm_mc_receiver::pwm( void ) { // Pulse Width Modulation
       max_used_channel = pch;
     }
   }
-#ifdef TEENSY
+#ifndef __AVR_ATmega328P__
   if ( channel[0].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[0].pin ), []() { instance->handleInterruptPWM( 0 ); }, CHANGE );  
   if ( channel[1].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[1].pin ), []() { instance->handleInterruptPWM( 1 ); }, CHANGE );  
   if ( channel[2].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[2].pin ), []() { instance->handleInterruptPWM( 2 ); }, CHANGE );  

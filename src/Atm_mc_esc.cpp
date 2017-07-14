@@ -4,7 +4,7 @@
 // Uses the Servo library on other platforms
 
   
-#ifdef TEENSY_FAST_PWM
+#ifndef __AVR_ATmega328P__
 
 // Servo + Fast PWM option on Teensy 3.x/LC platforms.
 

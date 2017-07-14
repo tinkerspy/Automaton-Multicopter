@@ -2,10 +2,6 @@
 
 #include <Automaton.h>
 
-#if defined(__MKL26Z64__) || defined(__MK20DX256__) || defined(__MK62FX512__) || defined(__MK66FX1M0__ )
-#define TEENSY
-#endif
-
 #define CHANNELS 6
 
 typedef struct {
@@ -76,7 +72,7 @@ class Atm_mc_receiver: public Machine {
   uint8_t max_used_channel;
   int physical[CHANNELS]; // make it a uint8_t???
   atm_timer_millis timer; // Wait for RC to stabilize
-#ifndef TEENSY
+#ifdef __AVR_ATmega328P__
   int_struct volatile int_state[3];
 #endif
 
