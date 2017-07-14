@@ -16,7 +16,7 @@ typedef struct {
 typedef struct {
     int last_output;    
     int min, max;
-    float mix[NO_OF_INPUT_CHANNELS];
+    int8_t mix[NO_OF_INPUT_CHANNELS];
     bool enabled;
 } output_channel_struct;
 
@@ -38,7 +38,7 @@ class Atm_mc_mixer: public Machine {
   Atm_mc_mixer& stop( void );
   Atm_mc_mixer& set( int input_ch, int value );
   int get( int input_ch, bool raw = false );
-  Atm_mc_mixer& mix( int output_ch, int input_ch0, int input_ch1, int input_ch2, int input_ch3 );
+  Atm_mc_mixer& mix( int output_ch, int8_t input_ch0, int8_t input_ch1, int8_t input_ch2, int8_t input_ch3 );
   Atm_mc_mixer& mix( int output_ch );
   Atm_mc_mixer& input( int input_ch, int min, int max );
   Atm_mc_mixer& input( int min, int max );

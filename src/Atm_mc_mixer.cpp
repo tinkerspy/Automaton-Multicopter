@@ -23,10 +23,10 @@ Atm_mc_mixer& Atm_mc_mixer::config( int personality /* = CFG_MIXER_QUADX */ ) {
       // Configuration for a standard X-quadcopter 
       // Motor order: FR(ccw), 1=RR(cw), 2=RL(ccw), 3=FL(cw)
       // Input order: yaw, pitch, roll, throttle
-      mix( 0, -1, -1, -1, +1 ); 
-      mix( 1, +1, +1, -1, +1 ); 
-      mix( 2, -1, +1, +1, +1 ); 
-      mix( 3, +1, -1, +1, +1 );
+      mix( 0, -100, -100, -100, +100 ); 
+      mix( 1, +100, +100, -100, +100 ); 
+      mix( 2, -100, +100, +100, +100 ); 
+      mix( 3, +100, -100, +100, +100 );
       input( -250, 250 );
       input( 3, 0, 1000 );
       output( -1, -1 );
@@ -69,7 +69,7 @@ void Atm_mc_mixer::action( int id ) {
 
 // Sets the input channel mix for an output channel (motor) and enables the channel
 
-Atm_mc_mixer& Atm_mc_mixer::mix( int output_ch, int input_ch0, int input_ch1, int input_ch2, int input_ch3 ) {
+Atm_mc_mixer& Atm_mc_mixer::mix( int output_ch, int8_t input_ch0, int8_t input_ch1, int8_t input_ch2, int8_t input_ch3 ) {
   output_channel[output_ch].mix[0] = input_ch0;
   output_channel[output_ch].mix[1] = input_ch1;
   output_channel[output_ch].mix[2] = input_ch2;
@@ -97,16 +97,9 @@ Atm_mc_mixer& Atm_mc_mixer::master( int input_ch ) {
 int Atm_mc_mixer::calculate_output( int output_ch ) { 
   int v = 0;
   for ( int input_ch = 0; input_ch < NO_OF_INPUT_CHANNELS; input_ch++ )
-    v += input_channel[input_ch].value * output_channel[output_ch].mix[input_ch];
+    v += input_channel[input_ch].value * ( output_channel[output_ch].mix[input_ch] / 100 );
   if ( master_input > -1 && input_channel[master_input].value == 0 ) v = 0;
   return constrain( v, 0, 1000 ); 
-  /* TEST THE ABOVE LOGIC!!!
-  return constrain( 
-    ( input_channel[0].value * output_channel[output_ch].mix[0] ) +
-    ( input_channel[1].value * output_channel[output_ch].mix[1] ) +
-    ( input_channel[2].value * output_channel[output_ch].mix[2] ) +
-    ( input_channel[3].value * output_channel[output_ch].mix[3] ), 0, 1000 );
-  */
 }
 
 // Updates all output channels and optionally call the onChange() method
