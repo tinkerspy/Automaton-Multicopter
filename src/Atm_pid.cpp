@@ -21,12 +21,12 @@ Atm_pid& Atm_pid::begin( int sample_rate_ms, float Kp, float Ki, float Kd, float
   this->KdValue = Kd;
   windup_guard = windup;
   output_offset = 0.0;
+  setPoint = 0;
   reset();
   return *this;          
 }
 
 Atm_pid& Atm_pid::reset() {
-  setPoint = 0;
   integral = 0;
   derivative = 0;
   last_error = 0;
@@ -64,7 +64,7 @@ void Atm_pid::action( int id ) {
       controlVariable = calculate( setPoint, processVariable );
       return;
     case ENT_CHANGED:
-      push( connectors, ON_CHANGE, 0, ( controlVariable * 10000 ) + output_offset, 0 ); 
+      push( connectors, ON_CHANGE, 0, controlVariable + output_offset, 0 ); 
       last_cv = controlVariable;
       return;
   }
@@ -142,7 +142,7 @@ Atm_pid& Atm_pid::Kd( float KdValue ) {
 }
 
 float Atm_pid::cv( void ) {
-  return ( this->controlVariable * 10000 ) + output_offset;
+  return this->controlVariable + output_offset;
 }
 
 float Atm_pid::Kp( void ) {

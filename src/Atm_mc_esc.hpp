@@ -21,9 +21,11 @@ class Atm_mc_esc {
  public:
   Atm_mc_esc& begin(  int p, int frequency = -1 ); 
   Atm_mc_esc& speed( int v );
+  Atm_mc_esc& enable( bool v = true );
   int speed( );
  private:
   Servo servo;  
+  bool enabled;
 #ifdef TEENSY_FAST_PWM
   int motor_cur_speed;
   bool servo_mode;  
