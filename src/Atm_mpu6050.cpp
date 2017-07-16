@@ -92,6 +92,8 @@ void Atm_mpu6050::action( int id ) {
           rate_cur_counter++;
         }          
         axis[ax].value = v;
+        if ( !enable_stabilize ) 
+          push( connectors, ON_SAMPLE, axis[ax].logical, read( ax ), axis[ax].logical );
       }
       if ( enable_stabilize && rate_fin_counter  == 0 ) {
         push( connectors, ON_STABILIZE, 0, 0, 0 );    
@@ -227,20 +229,10 @@ Atm_mpu6050& Atm_mpu6050::stop() {
 }
 
 /*
- * onChange() push connector variants ( slots 1, autostore 0, broadcast 0 )
+ * onChange() push connector variants ( slots 3, autostore 0, broadcast 0 )
  */
 
- Atm_mpu6050& Atm_mpu6050::onStabilize( Machine& machine, int event ) {
-  onPush( connectors, ON_STABILIZE, 0, 1, 1, machine, event );
-  return *this;
-}
-
-Atm_mpu6050& Atm_mpu6050::onStabilize( atm_cb_push_t callback, int idx ) {
-  onPush( connectors, ON_STABILIZE, 0, 1, 1, callback, idx );
-  return *this;
-}
-
- Atm_mpu6050& Atm_mpu6050::onChange( Machine& machine, int event ) {
+Atm_mpu6050& Atm_mpu6050::onChange( Machine& machine, int event ) {
   onPush( connectors, ON_CHANGE, 0, 3, 1, machine, event );
   return *this;
 }
@@ -257,6 +249,44 @@ Atm_mpu6050& Atm_mpu6050::onChange( int sub, Machine& machine, int event ) {
 
 Atm_mpu6050& Atm_mpu6050::onChange( int sub, atm_cb_push_t callback, int idx ) {
   onPush( connectors, ON_CHANGE, sub, 3, 0, callback, idx );
+  return *this;
+}
+
+/*
+ * onSample() push connector variants ( slots 3, autostore 0, broadcast 0 )
+ */
+
+Atm_mpu6050& Atm_mpu6050::onSample( Machine& machine, int event ) {
+  onPush( connectors, ON_SAMPLE, 0, 3, 1, machine, event );
+  return *this;
+}
+
+Atm_mpu6050& Atm_mpu6050::onSample( atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_SAMPLE, 0, 3, 1, callback, idx );
+  return *this;
+}
+
+Atm_mpu6050& Atm_mpu6050::onSample( int sub, Machine& machine, int event ) {
+  onPush( connectors, ON_SAMPLE, sub, 3, 0, machine, event );
+  return *this;
+}
+
+Atm_mpu6050& Atm_mpu6050::onSample( int sub, atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_SAMPLE, sub, 3, 0, callback, idx );
+  return *this;
+}
+
+/*
+ * onStabilize() push connector variants ( slots 1, autostore 0, broadcast 0 )
+ */
+
+Atm_mpu6050& Atm_mpu6050::onStabilize( Machine& machine, int event ) {
+  onPush( connectors, ON_STABILIZE, 0, 1, 1, machine, event );
+  return *this;
+}
+
+Atm_mpu6050& Atm_mpu6050::onStabilize( atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_STABILIZE, 0, 1, 1, callback, idx );
   return *this;
 }
 

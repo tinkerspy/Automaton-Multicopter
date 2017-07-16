@@ -69,7 +69,7 @@ void Atm_pid::action( int id ) {
       return;
   }
 }
-
+ 
 /* Optionally override the default trigger() method
  * Control how your machine processes triggers
  */
@@ -93,14 +93,24 @@ Atm_pid& Atm_pid::sp( float setPoint ) { // TODO: While in HOLD ignore setPoint 
   if ( Machine::state() ) {
     this->setPoint = setPoint;
   } else {
+    this->setPoint = setPoint;
     this->controlVariable = setPoint;
-    connectors[ON_CHANGE].push( setPoint, 0 ); // Open loop mode (CV = SP): units!!!!
+    connectors[ON_CHANGE].push( setPoint, 0 ); // Open loop mode (CV = SP)
   }
   return *this;
 }
 
 Atm_pid& Atm_pid::pv( float processVariable ) {
   this->processVariable = processVariable;
+  if ( timer.value == ATM_TIMER_OFF ) { 
+  // Slave mode! (TODO: Moet ook nog state-afhankelijk zijn!)
+  // IDLE? do nothing
+    controlVariable = calculate( setPoint, processVariable );
+    if ( controlVariable != last_cv ) {
+      push( connectors, ON_CHANGE, 0, controlVariable + output_offset, 0 ); 
+      last_cv = controlVariable;
+    }
+  }
   return *this;
 }
 
@@ -137,6 +147,13 @@ Atm_pid& Atm_pid::Ki( float KiValue ) {
 }
 
 Atm_pid& Atm_pid::Kd( float KdValue ) {
+  this->KdValue = KdValue;
+  return *this;  
+}
+
+Atm_pid& Atm_pid::pid( float KpValue, float KiValue, float KdValue ) {
+  this->KpValue = KpValue;
+  this->KiValue = KiValue;
   this->KdValue = KdValue;
   return *this;  
 }

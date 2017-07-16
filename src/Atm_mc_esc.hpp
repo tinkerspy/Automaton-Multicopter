@@ -1,7 +1,12 @@
 #pragma once
 
 #include <Automaton.h>
+
+#ifdef __AVR_ATmega328P__
 #include <Servo400.h>
+#else 
+#include <Servo.h>
+#endif
  
 #define PWM_50HZ_1000US 3277
 
@@ -20,7 +25,11 @@ class Atm_mc_esc {
   Atm_mc_esc& enable( bool v = true );
   int speed( );
  private:
+#ifdef __AVR_ATmega328P__
   Servo400 servo;  
+#else
+  Servo servo;  
+#endif  
   bool enabled;
 #ifndef __AVR_ATmega328P__
   int motor_cur_speed;

@@ -8,7 +8,7 @@ class Atm_pid: public Machine {
   enum { IDLE, RUN, SAMPLE, CHANGED }; // STATES
   enum { EVT_TIMER, EVT_START, EVT_STOP, EVT_CHANGED, ELSE }; // EVENTS
   Atm_pid( void ) : Machine() {};
-  Atm_pid& begin( int sample_rate, float Kp = 0.2, float Ki = 0.0, float Kd = 0.0, float windup = 20.0 );
+  Atm_pid& begin( int sample_rate = -1, float Kp = 0.2, float Ki = 0.0, float Kd = 0.0, float windup = 20.0 );
   Atm_pid& trace( Stream & stream );
   Atm_pid& trigger( int event );
   int state( void );
@@ -20,6 +20,7 @@ class Atm_pid: public Machine {
   Atm_pid& stop( void );
   Atm_pid& sp( float setPoint );
   Atm_pid& pv( float processValue );
+  Atm_pid& pid( float KpValue, float KiValue = 0, float KdValue = 0 );
   Atm_pid& Kp( float KpValue );
   Atm_pid& Ki( float KiValue );
   Atm_pid& Kd( float KdValue );

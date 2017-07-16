@@ -15,7 +15,7 @@ typedef struct {
     int logical;
 } rc_struct;
 
-#ifndef TEENSY
+#ifdef __AVR_ATmega328P__
 typedef struct {
   byte reg;
   byte channel[8];

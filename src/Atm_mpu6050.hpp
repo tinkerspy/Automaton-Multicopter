@@ -36,6 +36,10 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
   Atm_mpu6050& onStabilize( Machine& machine, int event = 0 );
   Atm_mpu6050& onStabilize( atm_cb_push_t callback, int idx = 0 );
+  Atm_mpu6050& onSample( Machine& machine, int event = 0 );
+  Atm_mpu6050& onSample( atm_cb_push_t callback, int idx = 0 );
+  Atm_mpu6050& onSample( int sub, Machine& machine, int event = 0 );
+  Atm_mpu6050& onSample( int sub, atm_cb_push_t callback, int idx = 0 );
 
   int read( int ypr );
   int rate( int ypr );
@@ -51,7 +55,7 @@ class Atm_mpu6050: public Machine {
 
   private:
   enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED }; // ACTIONS
-  enum { ON_CHANGE, ON_STABILIZE = 3, CONN_MAX }; // CONNECTORS
+  enum { ON_CHANGE, ON_SAMPLE = 3, ON_STABILIZE = 6, CONN_MAX }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
   int event( int id ); 
   void action( int id );
