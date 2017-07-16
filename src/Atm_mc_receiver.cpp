@@ -84,28 +84,9 @@ void Atm_mc_receiver::action( int id ) {
   }
 }
 
-void Atm_mc_receiver::handleInterruptPWM( int pch ) { // pch = physical channel no
-  if ( digitalRead( channel[pch].pin ) ) {
-    channel[pch].last_high = micros();    
-  } else {
-    channel[pch].value = micros() - channel[pch].last_high; 
-  }
-}
-
-void Atm_mc_receiver::handleInterruptPPM() {
-  uint32_t delta = micros() - ppm_last_pulse;
-  if ( delta > 4000 ) { // Reset pulse_counter on long gap
-    ppm_pulse_counter = 0;
-  } else {
-    if ( ppm_pulse_counter < CHANNELS ) {
-      channel[ppm_pulse_counter].value = delta;
-    }        
-    ppm_pulse_counter++;
-  }
-  ppm_last_pulse = micros();
-}
-
 #ifdef __AVR_ATmega328P__
+
+// Code for the Arduino UNO that has shared interrupts per pin register
 
 // Set up the pin change interrupt for a channel/pin combo
 
@@ -170,6 +151,31 @@ ISR (PCINT0_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 0, PCMSK
 ISR (PCINT1_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 1, PCMSK1, PINC ); }
 ISR (PCINT2_vect) { Atm_mc_receiver::instance->register_pin_change_pwm( 2, PCMSK2, PIND ); }
 
+#else
+
+// Code for Teensy 3.x/LC and any other uController that supports pin change interrupts for any pin  
+  
+void Atm_mc_receiver::handleInterruptPWM( int pch ) { // pch = physical channel no
+  if ( digitalRead( channel[pch].pin ) ) {
+    channel[pch].last_high = micros();    
+  } else {
+    channel[pch].value = micros() - channel[pch].last_high; 
+  }
+}
+
+void Atm_mc_receiver::handleInterruptPPM() {
+  uint32_t delta = micros() - ppm_last_pulse;
+  if ( delta > 4000 ) { // Reset pulse_counter on long gap
+    ppm_pulse_counter = 0;
+  } else {
+    if ( ppm_pulse_counter < CHANNELS ) {
+      channel[ppm_pulse_counter].value = delta;
+    }        
+    ppm_pulse_counter++;
+  }
+  ppm_last_pulse = micros();
+}
+
 #endif
 
 int Atm_mc_receiver::translate( int pch ) { // pch = physical channel no
@@ -218,7 +224,9 @@ int Atm_mc_receiver::read( int lch, bool raw /* = 0 */ ) {
 
 Atm_mc_receiver& Atm_mc_receiver::ppm( void ) { // Pulse Position Modulation
   pinMode( channel[0].pin, INPUT_PULLUP );
-#ifndef __AVR_ATmega328P__
+#ifdef __AVR_ATmega328P__
+  // Oops PPM is not yet implemented on UNO!
+#else
   if ( channel[0].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[0].pin ), []() { instance->handleInterruptPPM(); }, RISING );
   if ( channel[1].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[1].pin ) );  
   if ( channel[2].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[2].pin ) );  
@@ -226,8 +234,6 @@ Atm_mc_receiver& Atm_mc_receiver::ppm( void ) { // Pulse Position Modulation
   if ( channel[4].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[4].pin ) );  
   if ( channel[5].pin > -1 ) detachInterrupt( digitalPinToInterrupt( channel[5].pin ) );  
   max_used_channel = 5;
-#else 
-  // Oops PPM is not yet implemented on UNO!
 #endif
   return *this;
 }
@@ -239,17 +245,17 @@ Atm_mc_receiver& Atm_mc_receiver::pwm( void ) { // Pulse Width Modulation
       max_used_channel = pch;
     }
   }
-#ifndef __AVR_ATmega328P__
+#ifdef __AVR_ATmega328P__
+  for ( int pch = 0; pch < CHANNELS; pch++ ) {
+    if ( channel[pch].pin > -1 ) set_channel( pch, channel[pch].pin );
+  }
+#else
   if ( channel[0].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[0].pin ), []() { instance->handleInterruptPWM( 0 ); }, CHANGE );  
   if ( channel[1].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[1].pin ), []() { instance->handleInterruptPWM( 1 ); }, CHANGE );  
   if ( channel[2].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[2].pin ), []() { instance->handleInterruptPWM( 2 ); }, CHANGE );  
   if ( channel[3].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[3].pin ), []() { instance->handleInterruptPWM( 3 ); }, CHANGE );  
   if ( channel[4].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[4].pin ), []() { instance->handleInterruptPWM( 4 ); }, CHANGE );  
   if ( channel[5].pin > -1 ) attachInterrupt( digitalPinToInterrupt( channel[5].pin ), []() { instance->handleInterruptPWM( 5 ); }, CHANGE );
-#else 
-  for ( int pch = 0; pch < CHANNELS; pch++ ) {
-    if ( channel[pch].pin > -1 ) set_channel( pch, channel[pch].pin );
-  }
 #endif  
   return *this;
 }
@@ -349,8 +355,6 @@ Atm_mc_receiver& Atm_mc_receiver::onChange( int sub, atm_cb_push_t callback, int
   onPush( connectors, ON_CHANGE, sub, CHANNELS, 0, callback, idx );
   return *this;
 }
-
-
 
 
 /* Nothing customizable below this line                          
