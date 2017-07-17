@@ -93,8 +93,8 @@ void Atm_mpu6050::action( int id ) {
         }          
         axis[ax].value = v;
         if ( !enable_stabilize && axis[ax].master ) {
-          int v = read( ax );
-          push( connectors, ON_CHANGE, axis[ax].logical, read( v ), axis[ax].logical );
+          int v = read( axis[ax].logical );
+          push( connectors, ON_CHANGE, axis[ax].logical, v, axis[ax].logical );
           axis[ax].last_output = v;
           axis[ax].last_value = axis[ax].value;
         }

@@ -2,13 +2,16 @@
 
 #include <Automaton.h>
 
-#include <Wire.h>
+
+#include "helper_3dmath.h"
+#define MPU6050_INCLUDE_DMP_MOTIONAPPS20
+#include "MPU6050.h"
 
 typedef struct {
-    int16_t value, last_value; // angle_pitch, angle_roll
+    int16_t value, last_value;
     int16_t last_output;    
     int16_t min_out, max_out, offset;
-    int16_t, acc, gyro, gyro_cal,;
+    int16_t rate_pos;
     byte logical, reverse;
 } axis_struct;
 
@@ -33,6 +36,10 @@ class Atm_mpu6050jb: public Machine {
   Atm_mpu6050jb& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
   Atm_mpu6050jb& onStabilize( Machine& machine, int event = 0 );
   Atm_mpu6050jb& onStabilize( atm_cb_push_t callback, int idx = 0 );
+  Atm_mpu6050jb& onSample( Machine& machine, int event = 0 );
+  Atm_mpu6050jb& onSample( atm_cb_push_t callback, int idx = 0 );
+  Atm_mpu6050jb& onSample( int sub, Machine& machine, int event = 0 );
+  Atm_mpu6050jb& onSample( int sub, atm_cb_push_t callback, int idx = 0 );
 
   int read( int ypr );
   int rate( int ypr );
@@ -48,19 +55,21 @@ class Atm_mpu6050jb: public Machine {
 
   private:
   enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED }; // ACTIONS
-  enum { ON_CHANGE, ON_STABILIZE = 3, CONN_MAX }; // CONNECTORS
+  enum { ON_CHANGE, ON_SAMPLE = 3, ON_STABILIZE = 6, CONN_MAX }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
   int event( int id ); 
   void action( int id );
   
+  MPU6050 mpu6050;
   atm_timer_millis timer;
 
   uint16_t packetSize, fifoCount;
   axis_struct axis[3];
   byte physical[3];  
   
-  temperature
-};
+  bool enable_stabilize;
+  int16_t rate_win, rate_pos, rate_fin_counter, rate_cur_counter, rate_millis; 
+  byte rate_cur_second;};
 
 /*
 Automaton::ATML::begin - Automaton Markup Language
