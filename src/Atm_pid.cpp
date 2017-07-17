@@ -81,10 +81,14 @@ Atm_pid& Atm_pid::trigger( int event ) {
 
 float Atm_pid::calculate( float setPoint, float processVariable ) {
   float error = setPoint - processVariable;
-  integral += error * ( timer.value / 1000.0 );    
-  integral = constrain( integral, -windup_guard, +windup_guard ); 
-  derivative = ( error - last_error ) / float( timer.value );    
-  last_error = error;          
+  if ( last_calculation ) {
+    float dt = ( micros() - last_calculation ) / 1000000.0; // TESTME!
+    integral += error * dt;    
+    integral = constrain( integral, -windup_guard, +windup_guard ); 
+    derivative = ( error - last_error ) / dt;
+    last_calculation = micros();  
+    last_error = error;      
+  }  
   return ( KpValue * error ) + ( KiValue * integral ) + ( KdValue * derivative );   
 }
 
