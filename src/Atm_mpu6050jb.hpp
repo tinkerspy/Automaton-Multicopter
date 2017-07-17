@@ -12,62 +12,70 @@ typedef struct {
     int16_t min_out, max_out, offset;
     int16_t rate_pos;
     byte logical, reverse, master;
-} axis_struct;
+    int gyro;
+    int32_t acc, gyro_cal;
+    float angle, angle_output;
+} axis_struct_jb;
 
-class Atm_mpu6050: public Machine {
+class Atm_mpu6050jb: public Machine {
 
  public:
   enum { YAW, PITCH, ROLL };
   enum { REVERSE = B10000000 };
-  enum { IDLE, INIT, RUN, CHECK, SAMPLE, CHANGED }; // STATES
-  enum { EVT_SAMPLE, EVT_CHANGE, EVT_TIMER, EVT_START, EVT_STOP, EVT_INITDONE, ELSE }; // EVENTS
-  Atm_mpu6050( void ) : Machine() {};
-  Atm_mpu6050& begin( int sample_rate );
-  Atm_mpu6050& trace( Stream & stream );
-  Atm_mpu6050& trigger( int event );
+  enum { IDLE, INIT, CAL, RUN, CHECK, SAMPLE, CHANGED }; // STATES
+  enum { EVT_SAMPLE, EVT_CHANGE, EVT_TIMER, EVT_COUNTER, EVT_START, EVT_STOP, EVT_INITDONE, ELSE }; // EVENTS
+  Atm_mpu6050jb( void ) : Machine() {};
+  Atm_mpu6050jb& begin( int sample_rate );
+  Atm_mpu6050jb& trace( Stream & stream );
+  Atm_mpu6050jb& trigger( int event );
   int state( void );
-  Atm_mpu6050& start( void );
-  Atm_mpu6050& stop( void );
+  Atm_mpu6050jb& start( void );
+  Atm_mpu6050jb& stop( void );
   
-  Atm_mpu6050& onChange( Machine& machine, int event = 0 );
-  Atm_mpu6050& onChange( atm_cb_push_t callback, int idx = 0 );
-  Atm_mpu6050& onChange( int sub, Machine& machine, int event = 0 );
-  Atm_mpu6050& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
-  Atm_mpu6050& onStabilize( Machine& machine, int event = 0 );
-  Atm_mpu6050& onStabilize( atm_cb_push_t callback, int idx = 0 );
+  Atm_mpu6050jb& onChange( Machine& machine, int event = 0 );
+  Atm_mpu6050jb& onChange( atm_cb_push_t callback, int idx = 0 );
+  Atm_mpu6050jb& onChange( int sub, Machine& machine, int event = 0 );
+  Atm_mpu6050jb& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
+  Atm_mpu6050jb& onStabilize( Machine& machine, int event = 0 );
+  Atm_mpu6050jb& onStabilize( atm_cb_push_t callback, int idx = 0 );
 
   int read( int ypr );
   int rate( int ypr );
   int rate( void );
-  Atm_mpu6050& range( int ypr, int toLow, int toHigh );
-  Atm_mpu6050& range( int toLow, int toHigh );
-  Atm_mpu6050& angle( int ypr, int max_angle );
-  Atm_mpu6050& angle( int max_angle );
-  Atm_mpu6050& mapping( int axis0, int axis1, int axis2 );
-  Atm_mpu6050& calibrate( int ypr, int v );
-  Atm_mpu6050& calibrate( int ypr );
-  Atm_mpu6050& stabilize( uint16_t win_size = 5, uint16_t win_millis = 5000 );
-  Atm_mpu6050& master( int ypr, bool master = true );
-  Atm_mpu6050& master( bool master = true );
+  Atm_mpu6050jb& range( int ypr, int toLow, int toHigh );
+  Atm_mpu6050jb& range( int toLow, int toHigh );
+  Atm_mpu6050jb& angle( int ypr, int max_angle );
+  Atm_mpu6050jb& angle( int max_angle );
+  Atm_mpu6050jb& mapping( int axis0, int axis1, int axis2 );
+  Atm_mpu6050jb& calibrate( int ypr, int v );
+  Atm_mpu6050jb& calibrate( int ypr );
+  Atm_mpu6050jb& stabilize( uint16_t win_size = 5, uint16_t win_millis = 5000 );
+  Atm_mpu6050jb& master( int ypr, bool master = true );
+  Atm_mpu6050jb& master( bool master = true );
 
   private:
-  enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED }; // ACTIONS
+  enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED, ENT_CAL }; // ACTIONS
   enum { ON_CHANGE, ON_STABILIZE = 3, CONN_MAX }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
   int event( int id ); 
   void action( int id );
+  void setup_mpu_6050_registers();
+  void read_mpu_6050_data();                                             
   
-  MPU6050 mpu6050;
   atm_timer_millis timer;
-
+  atm_counter init_counter;
+  
   uint16_t packetSize, fifoCount;
-  axis_struct axis[3];
+  axis_struct_jb axis[3];
   byte physical[3];  
   
   bool enable_stabilize;
   int16_t rate_win, rate_pos, rate_fin_counter, rate_cur_counter, rate_millis; 
   byte rate_cur_second;
+  int temperature;
+  bool set_gyro_angles;
   
+  int cnt;
 };
 
 /*
@@ -75,7 +83,7 @@ Automaton::ATML::begin - Automaton Markup Language
 
 <?xml version="1.0" encoding="UTF-8"?>
 <machines>
-  <machine name="Atm_mpu6050">
+  <machine name="Atm_mpu6050jb">
     <states>
       <IDLE index="0" sleep="1">
         <EVT_START>INIT</EVT_START>
