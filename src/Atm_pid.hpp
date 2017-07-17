@@ -2,6 +2,15 @@
 
 #include <Automaton.h>
 
+/*
+
+IDLE - Open loop mode, sp is immediately copied to cv, onChange() connector is called
+RUN - Closed loop mode, timer or master based samples, onChange() called only for changes
+HOLD - Closed loop mode with frozen sp
+
+*/
+
+
 class Atm_pid: public Machine {
 
  public:
@@ -48,7 +57,7 @@ class Atm_pid: public Machine {
   float setPoint, processVariable, controlVariable, last_cv;
   float integral, derivative, last_error; 
   float windup_guard, output_offset;
-
+  uint32_t last_calculation;
 
 };
 

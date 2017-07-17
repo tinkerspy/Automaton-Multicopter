@@ -46,9 +46,17 @@ Atm_rgb_lcd& Atm_rgb_lcd::setBacklight( int color ) {
   return *this;
 }
 
+Atm_rgb_lcd& Atm_rgb_lcd::setCursor( byte cur_x, byte cur_y ) {
+  this->cur_x = constrain( cur_x, 0, 15 );
+  this->cur_y = constrain( cur_y, 0, 1  );
+  return *this;
+}
+
 // Print a string at a specific location optionally clearing space before or after it
 
 Atm_rgb_lcd& Atm_rgb_lcd::printXY( int x, int y, const char s[], int justify /* = 0 */ ) {
+  x = constrain( x, 0, 15 );
+  y = constrain( y, 0, 1  );
   clear( x, y, abs( justify ) );
   if ( justify < 0 ) x += abs( justify ) - strlen( s );
   for ( uint8_t i = 0; i < strlen( s ); i++ ) {
@@ -61,20 +69,18 @@ Atm_rgb_lcd& Atm_rgb_lcd::printXY( int x, int y, const char s[], int justify /* 
 // Print a signed 8, 16 or 32 bit integer 
 
 Atm_rgb_lcd& Atm_rgb_lcd::printXY( int x, int y, int32_t v, int justify /* = 0 */ ) {	
-  char s[11]; // 10 digit + sign
+  char s[11]; // 10 digits + sign
   itoa( v, s, 10 );
   printXY( x, y, s, justify );
-  trigger( 0 ); // Wakes up the state machine to update the display
   return *this;
 }
 
 // Print an unsigned 8, 16 or 32 bit integer 
 
 Atm_rgb_lcd& Atm_rgb_lcd::printXY( int x, int y, uint32_t v, int justify /* = 0 */ ) {	
-  char s[11]; // 10 digit + sign
+  char s[11]; // 10 digits
   ultoa( v, s, 10 );
   printXY( x, y, s, justify );
-  trigger( 0 ); // Wakes up the state machine to update the display
   return *this;
 }
 
@@ -94,10 +100,14 @@ Atm_rgb_lcd& Atm_rgb_lcd::printXY( int x, int y, double v, int precision, int ju
   char s[32]; // should be enough... 
   dtostrf( v, 0, precision, s );
   printXY( x, y, s, justify );
-  trigger( 0 ); // Wakes up the state machine to update the display
   return *this;
 }
 
+Atm_rgb_lcd& Atm_rgb_lcd::print( const char s[] ) {	
+  printXY( cur_x, cur_y, s );
+  setCursor( cur_x + strlen( s ), cur_y );
+  return *this;
+}
 
 Atm_rgb_lcd& Atm_rgb_lcd::clear( int xpos /* = -1 */, int ypos /* = -1 */, int len /* = -1 */ ) {	
   if ( ypos > -1 ) { // Delete from x/y to eol
@@ -105,18 +115,18 @@ Atm_rgb_lcd& Atm_rgb_lcd::clear( int xpos /* = -1 */, int ypos /* = -1 */, int l
       for ( uint8_t x = xpos; x < xmax; x++ ) {
         soll[ypos][x] = ' ';
       }    
+      setCursor( xpos, ypos );
   } else {
     for ( uint8_t y = 0; y < 2; y++ ) {
       for ( uint8_t x = 0; x < 16; x++ ) {
         soll[y][x] = ' ';
       }
     }
+    setCursor( 0, 0 );
   }
   trigger( 0 ); // Wakes up the state machine to update the display
   return *this;
 }
-
-
 
 int Atm_rgb_lcd::_updateDisplay( int max_updates ) 
 {

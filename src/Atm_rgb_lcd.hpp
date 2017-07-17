@@ -52,15 +52,19 @@ typedef char display_t[2][16];
   
   // Prints a double/float with the specified precision (justify works as described above)
   Atm_rgb_lcd& printXY( int x, int y, double v, int precision = 2, int justify = 0 );	
-  
-  
+
+  // Simple cursor-based print  
+  Atm_rgb_lcd& setCursor( byte cur_x, byte cur_y );
+  Atm_rgb_lcd& print( const char s[] );
+
  private:
   enum { LP_IDLE }; // ACTIONS
   enum { ON_PRESS, CONN_MAX = 5 }; // CONNECTORS
   int event( int id ); 
   void action( int id ); 
   int _updateDisplay( int max_updates );
-
+  byte cur_x, cur_y;
+  
   Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
 
   display_t ist, soll = { // German for 'what is' (ist) and 'what should be' (soll)
