@@ -92,8 +92,12 @@ void Atm_mpu6050::action( int id ) {
           rate_cur_counter++;
         }          
         axis[ax].value = v;
-        if ( !enable_stabilize ) 
-          push( connectors, ON_SAMPLE, axis[ax].logical, read( ax ), axis[ax].logical );
+        if ( !enable_stabilize && axis[ax].master ) {
+          int v = read( ax );
+          push( connectors, ON_CHANGE, axis[ax].logical, read( v ), axis[ax].logical );
+          axis[ax].last_output = v;
+          axis[ax].last_value = axis[ax].value;
+        }
       }
       if ( enable_stabilize && rate_fin_counter  == 0 ) {
         push( connectors, ON_STABILIZE, 0, 0, 0 );    
@@ -103,7 +107,7 @@ void Atm_mpu6050::action( int id ) {
     case ENT_CHANGED:
       for ( int i = YAW; i < ROLL + 1; i++ ) {
         int v = read( i );
-        if ( v != axis[i].last_output && !enable_stabilize ) {
+        if ( v != axis[i].last_output && !enable_stabilize && !axis[i].master ) {
           push( connectors, ON_CHANGE, axis[i].logical, v, axis[i].logical );    
           axis[i].last_output = v;
           axis[i].last_value = axis[i].value;
@@ -150,6 +154,18 @@ Atm_mpu6050& Atm_mpu6050::calibrate( int ypr ) {
   axis[physical[ypr]].last_value = 0xFF; // Force update event
   axis[physical[ypr]].last_output = 0xFF; 
   axis[physical[ypr]].value = 0xFF; 
+  return *this;
+}
+
+Atm_mpu6050& Atm_mpu6050::master( int ypr, bool master /* = true */ ) {
+  axis[physical[ypr]].master = master;
+  return *this;
+}
+
+Atm_mpu6050& Atm_mpu6050::master( bool master /* = true */ ) {
+  for ( int ax = YAW; ax < ROLL + 1; ax++ ) {
+    axis[physical[ax]].master = master;
+  }
   return *this;
 }
 
@@ -249,30 +265,6 @@ Atm_mpu6050& Atm_mpu6050::onChange( int sub, Machine& machine, int event ) {
 
 Atm_mpu6050& Atm_mpu6050::onChange( int sub, atm_cb_push_t callback, int idx ) {
   onPush( connectors, ON_CHANGE, sub, 3, 0, callback, idx );
-  return *this;
-}
-
-/*
- * onSample() push connector variants ( slots 3, autostore 0, broadcast 0 )
- */
-
-Atm_mpu6050& Atm_mpu6050::onSample( Machine& machine, int event ) {
-  onPush( connectors, ON_SAMPLE, 0, 3, 1, machine, event );
-  return *this;
-}
-
-Atm_mpu6050& Atm_mpu6050::onSample( atm_cb_push_t callback, int idx ) {
-  onPush( connectors, ON_SAMPLE, 0, 3, 1, callback, idx );
-  return *this;
-}
-
-Atm_mpu6050& Atm_mpu6050::onSample( int sub, Machine& machine, int event ) {
-  onPush( connectors, ON_SAMPLE, sub, 3, 0, machine, event );
-  return *this;
-}
-
-Atm_mpu6050& Atm_mpu6050::onSample( int sub, atm_cb_push_t callback, int idx ) {
-  onPush( connectors, ON_SAMPLE, sub, 3, 0, callback, idx );
   return *this;
 }
 

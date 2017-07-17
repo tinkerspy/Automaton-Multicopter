@@ -2,6 +2,7 @@
 
 #include <Automaton.h>
 
+// Is it useful to be able to set master mode for each channel???
 
 #include "helper_3dmath.h"
 #define MPU6050_INCLUDE_DMP_MOTIONAPPS20
@@ -12,7 +13,7 @@ typedef struct {
     int16_t last_output;    
     int16_t min_out, max_out, offset;
     int16_t rate_pos;
-    byte logical, reverse;
+    byte logical, reverse, master;
 } axis_struct;
 
 class Atm_mpu6050: public Machine {
@@ -36,10 +37,6 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
   Atm_mpu6050& onStabilize( Machine& machine, int event = 0 );
   Atm_mpu6050& onStabilize( atm_cb_push_t callback, int idx = 0 );
-  Atm_mpu6050& onSample( Machine& machine, int event = 0 );
-  Atm_mpu6050& onSample( atm_cb_push_t callback, int idx = 0 );
-  Atm_mpu6050& onSample( int sub, Machine& machine, int event = 0 );
-  Atm_mpu6050& onSample( int sub, atm_cb_push_t callback, int idx = 0 );
 
   int read( int ypr );
   int rate( int ypr );
@@ -52,10 +49,12 @@ class Atm_mpu6050: public Machine {
   Atm_mpu6050& calibrate( int ypr, int v );
   Atm_mpu6050& calibrate( int ypr );
   Atm_mpu6050& stabilize( uint16_t win_size = 5, uint16_t win_millis = 5000 );
+  Atm_mpu6050& master( int ypr, bool master = true );
+  Atm_mpu6050& master( bool master = true );
 
   private:
   enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED }; // ACTIONS
-  enum { ON_CHANGE, ON_SAMPLE = 3, ON_STABILIZE = 6, CONN_MAX }; // CONNECTORS
+  enum { ON_CHANGE, ON_STABILIZE = 3, CONN_MAX }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
   int event( int id ); 
   void action( int id );
@@ -69,7 +68,9 @@ class Atm_mpu6050: public Machine {
   
   bool enable_stabilize;
   int16_t rate_win, rate_pos, rate_fin_counter, rate_cur_counter, rate_millis; 
-  byte rate_cur_second;};
+  byte rate_cur_second;
+  
+};
 
 /*
 Automaton::ATML::begin - Automaton Markup Language
