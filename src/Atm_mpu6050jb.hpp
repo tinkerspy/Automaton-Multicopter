@@ -9,7 +9,7 @@
 typedef struct {
     int16_t value, last_value;
     int16_t last_output;    
-    int16_t min_out, max_out, offset;
+    int16_t min_out, max_out; // , offset;
     int16_t rate_pos;
     byte logical, reverse, master;
     int gyro;
@@ -22,7 +22,7 @@ class Atm_mpu6050jb: public Machine {
  public:
   enum { YAW, PITCH, ROLL };
   enum { REVERSE = B10000000 };
-  enum { IDLE, INIT, CAL, RUN, CHECK, SAMPLE, CHANGED }; // STATES
+  enum { IDLE, INIT, CAL, SAMPLE, CHANGED }; // STATES
   enum { EVT_SAMPLE, EVT_CHANGE, EVT_TIMER, EVT_COUNTER, EVT_START, EVT_STOP, EVT_INITDONE, ELSE }; // EVENTS
   Atm_mpu6050jb( void ) : Machine() {};
   Atm_mpu6050jb& begin( int sample_rate );
@@ -54,7 +54,7 @@ class Atm_mpu6050jb: public Machine {
   Atm_mpu6050jb& master( bool master = true );
 
   private:
-  enum { ENT_INIT, ENT_SAMPLE, ENT_CHECK, ENT_RUN, ENT_CHANGED, ENT_CAL }; // ACTIONS
+  enum { ENT_INIT, ENT_SAMPLE, ENT_CHANGED, ENT_CAL }; // ACTIONS
   enum { ON_CHANGE, ON_STABILIZE = 3, CONN_MAX }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
   int event( int id ); 

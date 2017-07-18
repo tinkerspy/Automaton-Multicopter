@@ -7,19 +7,17 @@
 Atm_mpu6050jb& Atm_mpu6050jb::begin( int sample_rate_ms ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
-    /*               ON_ENTER    ON_LOOP   ON_EXIT  EVT_SAMPLE EVT_CHANGE  EVT_TIMER  EVT_COUNTER  EVT_START  EVT_STOP  EVT_INITDONE  ELSE */
-    /*    IDLE */          -1, ATM_SLEEP,       -1,         -1,        -1,        -1,          -1,      INIT,       -1,           -1,   -1,
-    /*    INIT */    ENT_INIT,        -1,       -1,         -1,        -1,      INIT,         CAL,        -1,     IDLE,           -1,   -1,
-    /*     CAL */     ENT_CAL,        -1,       -1,         -1,        -1,        -1,          -1,        -1,     IDLE,           -1,  RUN,
-    /*     RUN */     ENT_RUN,        -1,       -1,         -1,        -1,     CHECK,          -1,        -1,     IDLE,           -1,   -1,
-    /*   CHECK */   ENT_CHECK,        -1,       -1,     SAMPLE,        -1,        -1,          -1,        -1,     IDLE,           -1,  RUN,
-    /*  SAMPLE */  ENT_SAMPLE,        -1,       -1,         -1,   CHANGED,        -1,          -1,        -1,     IDLE,           -1,  RUN,
-    /* CHANGED */ ENT_CHANGED,        -1,       -1,         -1,        -1,        -1,          -1,        -1,     IDLE,           -1,  RUN,
+    /*               ON_ENTER    ON_LOOP   ON_EXIT  EVT_SAMPLE EVT_CHANGE  EVT_TIMER  EVT_COUNTER  EVT_START  EVT_STOP  EVT_INITDONE    ELSE */
+    /*    IDLE */          -1, ATM_SLEEP,       -1,         -1,        -1,        -1,          -1,      INIT,       -1,           -1,     -1,
+    /*    INIT */    ENT_INIT,        -1,       -1,         -1,        -1,      INIT,         CAL,        -1,     IDLE,           -1,     -1,
+    /*     CAL */     ENT_CAL,        -1,       -1,         -1,        -1,        -1,          -1,        -1,     IDLE,           -1, SAMPLE,
+    /*  SAMPLE */  ENT_SAMPLE,        -1,       -1,         -1,   CHANGED,    SAMPLE,          -1,        -1,     IDLE,           -1,     -1,
+    /* CHANGED */ ENT_CHANGED,        -1,       -1,         -1,        -1,        -1,          -1,        -1,     IDLE,           -1, SAMPLE,
   };  
   // clang-format on
   Machine::begin( state_table, ELSE );
   Wire.begin();
-  //Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
+  Wire.setClock(400000); // 400kHz I2C clock. Comment this line if having compilation difficulties
   setup_mpu_6050_registers();
   timer.set( sample_rate_ms );
   init_counter.set( 2000 );
@@ -49,6 +47,10 @@ int Atm_mpu6050jb::event( int id ) {
   return 0;
 }
 
+
+enum { X, Y, Z };
+enum { P, R };
+
 /* Add C++ code for each action
  * This generates the 'output' for the state machine
  *
@@ -62,45 +64,43 @@ void Atm_mpu6050jb::action( int id ) {
   switch ( id ) {
     case ENT_INIT:
       read_mpu_6050_data();              //Read the raw acc and gyro data from the MPU-6050
-      axis[0].gyro_cal += axis[0].gyro;  //Add the gyro x-axis offset to the gyro_x_cal variable
-      axis[1].gyro_cal += axis[1].gyro;  //Add the gyro y-axis offset to the gyro_y_cal variable
-      axis[2].gyro_cal += axis[2].gyro;  //Add the gyro z-axis offset to the gyro_z_cal variable
+      axis[X].gyro_cal += axis[X].gyro;  //Add the gyro x-axis offset to the gyro_x_cal variable
+      axis[Y].gyro_cal += axis[Y].gyro;  //Add the gyro y-axis offset to the gyro_y_cal variable
+      axis[Z].gyro_cal += axis[Z].gyro;  //Add the gyro z-axis offset to the gyro_z_cal variable
       init_counter.decrement();
       return;
     case ENT_CAL:
-      axis[0].gyro_cal /= 2000; //Divide the gyro_x_cal variable by 2000 to get the avarage offset
-      axis[1].gyro_cal /= 2000; //Divide the gyro_y_cal variable by 2000 to get the avarage offset
-      axis[2].gyro_cal /= 2000; //Divide the gyro_z_cal variable by 2000 to get the avarage offset
+      axis[X].gyro_cal /= 2000; //Divide the gyro_x_cal variable by 2000 to get the avarage offset
+      axis[Y].gyro_cal /= 2000; //Divide the gyro_y_cal variable by 2000 to get the avarage offset
+      axis[Z].gyro_cal /= 2000; //Divide the gyro_z_cal variable by 2000 to get the avarage offset
       
       Serial.print( "CAL: " );
-      Serial.print( axis[0].gyro_cal );
+      Serial.print( axis[X].gyro_cal );
       Serial.print( "\t" );
-      Serial.print( axis[1].gyro_cal );
+      Serial.print( axis[Y].gyro_cal );
       Serial.print( "\t" );
-      Serial.print( axis[2].gyro_cal );
+      Serial.print( axis[Z].gyro_cal );
       Serial.print( "\n" );
       
-      return;
-    case ENT_RUN:
       return;
     case ENT_SAMPLE:
       read_mpu_6050_data();    //Read the raw acc and gyro data from the MPU-6050
 
-      axis[0].gyro -= axis[0].gyro_cal;   //Subtract the offset calibration value from the raw gyro_x value
-      axis[1].gyro -= axis[1].gyro_cal;   //Subtract the offset calibration value from the raw gyro_y value
-      axis[2].gyro -= axis[2].gyro_cal;   //Subtract the offset calibration value from the raw gyro_z value
+      axis[X].gyro -= axis[X].gyro_cal;   //Subtract the offset calibration value from the raw gyro_x value
+      axis[Y].gyro -= axis[Y].gyro_cal;   //Subtract the offset calibration value from the raw gyro_y value
+      axis[Z].gyro -= axis[Z].gyro_cal;   //Subtract the offset calibration value from the raw gyro_z value
       
       //Gyro angle calculations
       //0.0000611 = 1 / (250Hz / 65.5)
-      axis[0].angle += axis[0].gyro * 0.0000611; //Calculate the traveled pitch angle and add this to the angle_pitch variable
-      axis[1].angle += axis[1].gyro * 0.0000611;  //Calculate the traveled roll angle and add this to the angle_roll variable
+      axis[P].angle += axis[X].gyro * 0.0000611; //Calculate the traveled pitch angle and add this to the angle_pitch variable
+      axis[R].angle += axis[Y].gyro * 0.0000611;  //Calculate the traveled roll angle and add this to the angle_roll variable
       
       //0.000001066 = 0.0000611 * (3.142(PI) / 180degr) The Arduino sin function is in radians
-      axis[0].angle += axis[1].angle * sin(axis[2].gyro * 0.000001066); //If the IMU has yawed transfer the roll angle to the pitch angel
-      axis[1].angle -= axis[0].angle * sin(axis[2].gyro * 0.000001066); //If the IMU has yawed transfer the pitch angle to the roll angel
+      axis[P].angle += axis[R].angle * sin(axis[Z].gyro * 0.000001066); //If the IMU has yawed transfer the roll angle to the pitch angel
+      axis[R].angle -= axis[P].angle * sin(axis[Z].gyro * 0.000001066); //If the IMU has yawed transfer the pitch angle to the roll angel
       
       //Accelerometer angle calculations
-      acc_total_vector = sqrt((axis[0].acc*axis[0].acc)+(axis[1].acc*axis[1].acc)+(axis[2].acc*axis[2].acc));  //Calculate the total accelerometer vector
+      acc_total_vector = sqrt((axis[X].acc*axis[X].acc)+(axis[Y].acc*axis[Y].acc)+(axis[Z].acc*axis[Z].acc));  //Calculate the total accelerometer vector
       
       //57.296 = 1 / (3.142 / 180) The Arduino asin function is in radians
       angle_pitch_acc = asin((float)axis[1].acc/acc_total_vector)* 57.296;       //Calculate the pitch angle
@@ -111,24 +111,27 @@ void Atm_mpu6050jb::action( int id ) {
       angle_roll_acc -= 0.0;                                               //Accelerometer calibration value for roll
 
       if(set_gyro_angles){                                                 //If the IMU is already started
-        axis[0].angle = axis[0].angle * 0.9996 + angle_pitch_acc * 0.0004;     //Correct the drift of the gyro pitch angle with the accelerometer pitch angle
-        axis[1].angle = axis[1].angle * 0.9996 + angle_roll_acc * 0.0004;        //Correct the drift of the gyro roll angle with the accelerometer roll angle
+        axis[P].angle = axis[P].angle * 0.9996 + angle_pitch_acc * 0.0004;     //Correct the drift of the gyro pitch angle with the accelerometer pitch angle
+        axis[R].angle = axis[R].angle * 0.9996 + angle_roll_acc * 0.0004;        //Correct the drift of the gyro roll angle with the accelerometer roll angle
       }
       else{                                                                //At first start
-        axis[0].angle = angle_pitch_acc;                                     //Set the gyro pitch angle equal to the accelerometer pitch angle 
-        axis[1].angle = angle_roll_acc;                                       //Set the gyro roll angle equal to the accelerometer roll angle 
+        axis[P].angle = angle_pitch_acc;                                     //Set the gyro pitch angle equal to the accelerometer pitch angle 
+        axis[R].angle = angle_roll_acc;                                       //Set the gyro roll angle equal to the accelerometer roll angle 
         set_gyro_angles = true;                                            //Set the IMU started flag
       }
       
       //To dampen the pitch and roll angles a complementary filter is used
-      axis[0].angle_output = axis[0].angle_output * 0.9 + axis[0].angle * 0.1;   //Take 90% of the output pitch value and add 10% of the raw pitch value
-      axis[1].angle_output = axis[1].angle_output * 0.9 + axis[1].angle * 0.1;      //Take 90% of the output roll value and add 10% of the raw roll value
-      axis[0].value = axis[0].angle_output * 100;
-      axis[1].value = axis[1].angle_output * 100;
+      axis[P].angle_output = axis[P].angle_output * 0.9 + axis[P].angle * 0.1;   //Take 90% of the output pitch value and add 10% of the raw pitch value
+      axis[R].angle_output = axis[R].angle_output * 0.9 + axis[R].angle * 0.1;      //Take 90% of the output roll value and add 10% of the raw roll value
+      axis[P].value = axis[P].angle_output * 100;
+      axis[R].value = axis[R].angle_output * 100;
       
-      if ( ++cnt % 50 == 0 ) {
-        Serial.println( axis[0].angle_output );
-        Serial.println( axis[1].angle_output );
+      if ( ++cnt % 250 == 0 ) {
+        Serial.print( millis() );
+        Serial.print( " AG: P=");
+        Serial.print( axis[P].value );
+        Serial.print( " R=");
+        Serial.println( axis[R].value );
       }
       return;
     case ENT_CHANGED:
@@ -148,7 +151,7 @@ void Atm_mpu6050jb::action( int id ) {
 
 int Atm_mpu6050jb::read( int ypr ) {
   ypr = physical[ypr];
-  int v = axis[ypr].value + axis[ypr].offset;
+  int v = axis[ypr].value; // + axis[ypr].offset;
   if ( axis[ypr].reverse ) v = v * -1;
   return map( constrain( v, -9000, 9000 ), -9000, 9000, axis[ypr].min_out, axis[ypr].max_out );    
 }
@@ -170,7 +173,7 @@ Atm_mpu6050jb& Atm_mpu6050jb::stabilize( uint16_t win_size /* = 5 */, uint16_t w
   enable_stabilize = true;
   return *this;
 }
-
+/*
 Atm_mpu6050jb& Atm_mpu6050jb::calibrate( int ypr, int v ) {
   axis[physical[ypr]].offset = v;
   return *this;
@@ -183,6 +186,7 @@ Atm_mpu6050jb& Atm_mpu6050jb::calibrate( int ypr ) {
   axis[physical[ypr]].value = 0xFF; 
   return *this;
 }
+*/
 
 Atm_mpu6050jb& Atm_mpu6050jb::master( int ypr, bool master /* = true */ ) {
   axis[physical[ypr]].master = master;
@@ -354,7 +358,7 @@ Atm_mpu6050jb& Atm_mpu6050jb::onStabilize( atm_cb_push_t callback, int idx ) {
 
 Atm_mpu6050jb& Atm_mpu6050jb::trace( Stream & stream ) {
   Machine::setTrace( &stream, atm_serial_debug::trace,
-    "MPU6050\0EVT_SAMPLE\0EVT_CHANGE\0EVT_TIMER\0EVT_COUNTER\0EVT_START\0EVT_STOP\0EVT_INITDONE\0ELSE\0IDLE\0INIT\0CAL\0RUN\0CHECK\0SAMPLE\0CHANGED" );
+    "MPU6050\0EVT_SAMPLE\0EVT_CHANGE\0EVT_TIMER\0EVT_COUNTER\0EVT_START\0EVT_STOP\0EVT_INITDONE\0ELSE\0IDLE\0INIT\0CAL\0SAMPLE\0CHANGED" );
   return *this;
 }
 
