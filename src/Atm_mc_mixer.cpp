@@ -4,7 +4,7 @@
  * Add extra initialization code
  */
 
-Atm_mc_mixer& Atm_mc_mixer::begin( int personality /* = CFG_MIXER_QUADX */ ) {
+Atm_mc_mixer& Atm_mc_mixer::begin( int personality /* = CFG_QUADX */ ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
     /*          ON_ENTER    ON_LOOP  ON_EXIT  EVT_START  EVT_STOP  ELSE */
@@ -13,13 +13,13 @@ Atm_mc_mixer& Atm_mc_mixer::begin( int personality /* = CFG_MIXER_QUADX */ ) {
   };
   // clang-format on
   Machine::begin( state_table, ELSE );
-  config( CFG_MIXER_QUADX );
+  config( CFG_QUADX );
   return *this;          
 }
 
-Atm_mc_mixer& Atm_mc_mixer::config( int personality /* = CFG_MIXER_QUADX */ ) {
+Atm_mc_mixer& Atm_mc_mixer::config( int personality /* = CFG_QUADX */ ) {
   switch( personality ) {
-    case CFG_MIXER_QUADX:
+    case CFG_QUADX:
       // Configuration for a standard X-quadcopter 
       // Motor order: FR(ccw), 1=RR(cw), 2=RL(ccw), 3=FL(cw)
       // Input order: yaw, pitch, roll, throttle

@@ -25,10 +25,10 @@ class Atm_mc_mixer: public Machine {
  public:
   enum { IDLE, RUN }; // STATES
   enum { EVT_START, EVT_STOP, ELSE }; // EVENTS
-  enum { CFG_MIXER_QUADX };
+  enum { CFG_MANUAL, CFG_QUADX };
   Atm_mc_mixer( void ) : Machine() {};
-  Atm_mc_mixer& begin(  int personality = CFG_MIXER_QUADX );
-  Atm_mc_mixer& config( int personality = CFG_MIXER_QUADX );
+  Atm_mc_mixer& begin(  int personality = CFG_QUADX );
+  Atm_mc_mixer& config( int personality = CFG_QUADX );
   Atm_mc_mixer& trace( Stream & stream );
   Atm_mc_mixer& trigger( int event );
   int state( void );
