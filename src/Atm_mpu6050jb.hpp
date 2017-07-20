@@ -13,7 +13,8 @@ typedef struct {
     int16_t rate_pos;
     byte logical, reverse, master;
     int gyro;
-    int32_t acc, gyro_cal;
+    int acc
+    int32_t gyro_cal;
     float angle, angle_output;
 } axis_struct_jb;
 
