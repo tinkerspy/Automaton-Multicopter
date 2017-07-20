@@ -266,18 +266,21 @@ void Atm_mpu6050jb::read_mpu_6050_data(){                                       
   Wire.endTransmission();                                              //End the transmission
   Wire.requestFrom(0x68,14);                                           //Request 14 bytes from the MPU-6050
   while(Wire.available() < 14);                                        //Wait until all the bytes are received
-  axis[0].acc = Wire.read()<<8|Wire.read();                                  //Add the low and high byte to the acc_x variable
-  axis[1].acc = Wire.read()<<8|Wire.read();                                  //Add the low and high byte to the acc_y variable
-  axis[2].acc = Wire.read()<<8|Wire.read();                                  //Add the low and high byte to the acc_z variable
-  temperature = Wire.read()<<8|Wire.read();                            //Add the low and high byte to the temperature variable
-  axis[0].gyro = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_x variable
-  axis[1].gyro = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_y variable
-  axis[2].gyro = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_z variable
+  axis[0].acc_lo = Wire.read();
+  axis[0].acc_hi = Wire.read();
+  axis[1].acc_lo = Wire.read();
+  axis[1].acc_hi = Wire.read();
+  axis[2].acc_lo = Wire.read();
+  axis[2].acc_hi = Wire.read();
+  temperature = Wire.read() << 8 | Wire.read();                        //Add the low and high byte to the temperature variable
+  axis[0].gyro_lo = Wire.read();
+  axis[0].gyro_hi = Wire.read();
+  axis[1].gyro_lo = Wire.read();
+  axis[1].gyro_hi = Wire.read();
+  axis[2].gyro_lo = Wire.read();
+  axis[2].gyro_hi = Wire.read();
 
 }
-
-
-
 
 /* Optionally override the default trigger() method
  * Control how your machine processes triggers

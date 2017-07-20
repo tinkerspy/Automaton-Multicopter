@@ -12,8 +12,14 @@ typedef struct {
     int16_t min_out, max_out; // , offset;
     int16_t rate_pos;
     byte logical, reverse, master;
-    int gyro;
-    int acc
+    union {
+      int acc;
+      struct { uint8_t acc_lo, acc_hi; };
+    };
+    union {
+      int gyro;
+      struct { uint8_t gyro_lo, gyro_hi; };
+    };
     int32_t gyro_cal;
     float angle, angle_output;
 } axis_struct_jb;
