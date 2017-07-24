@@ -4,6 +4,9 @@
 // Waarsch 180000..180000 (buiten int16_t range)
 // YAW rate waarden kloppen dus waarsch van geen kant!
 
+// TODO:
+// - Read i2c data into a (local) byte array/struct asynchronously (separate I2CREAD state)
+
 Atm_mpu6050jb& Atm_mpu6050jb::begin( int sample_rate_ms ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {

@@ -5,7 +5,10 @@
 #define NO_OF_INPUT_CHANNELS 4
 #define NO_OF_OUTPUT_CHANNELS 8
 
-// TODO: Configure the master!!!!
+// TODO: change ouput to 4 arguments:
+// output( min, max, min_running ): min_running = minimum als throttle > 0
+// zodat motoren altjd blijven draaien als de throttle > 0
+// zie: http://autoquad.org/wiki/wiki/configuring-autoquad-flightcontroller/esc-calibration/
 
 typedef struct {
     int min, max;
