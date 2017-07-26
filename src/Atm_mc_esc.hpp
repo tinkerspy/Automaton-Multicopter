@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Automaton.h>
-#include <Esc400.h>
+#include <Pulse400.h>
  
 #define PWM_50HZ_1000US 3277
 

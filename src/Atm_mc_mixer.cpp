@@ -57,8 +57,7 @@ void Atm_mc_mixer::action( int id ) {
   switch ( id ) {
     case ENT_IDLE:
       for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) { // Set all speeds to 0
-        if ( output_channel[output_ch].enabled ) 
-          connectors[ON_CHANGE].push( 0, output_ch );
+        
       }
       break;
     case ENT_RUN:
@@ -74,14 +73,6 @@ Atm_mc_mixer& Atm_mc_mixer::mix( int output_ch, int8_t input_ch0, int8_t input_c
   output_channel[output_ch].mix[1] = input_ch1;
   output_channel[output_ch].mix[2] = input_ch2;
   output_channel[output_ch].mix[3] = input_ch3;
-  output_channel[output_ch].enabled = true;
-  return *this;
-}
-
-// Disables the output channel (motor)
-
-Atm_mc_mixer& Atm_mc_mixer::mix( int output_ch ) {
-  output_channel[output_ch].enabled = false;
   return *this;
 }
 
@@ -102,37 +93,57 @@ int Atm_mc_mixer::calculate_output( int output_ch ) {
   return constrain( v, 0, 1000 ); 
 }
 
-// Updates all output channels and optionally call the onChange() method
+// Updates all output channels and optionally call the update_motors() method
 
 void Atm_mc_mixer::update_outputs() {
-    for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
-      if ( output_channel[output_ch].enabled ) {
-        int new_value = calculate_output( output_ch );
-        if ( new_value != output_channel[output_ch].last_output ) {
-          output_channel[output_ch].last_output = new_value;
-          if ( output_channel[output_ch].min != -1 && output_channel[output_ch].max != -1 ) 
-            new_value = map( new_value , 0, 1000, output_channel[output_ch].min, output_channel[output_ch].max );
-          connectors[ON_CHANGE].push( new_value, output_ch ); 
-        }
+  int8_t change_cnt = 0;
+  for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
+    if ( output_channel[output_ch].id_channel > -1 ) {
+      int new_value = calculate_output( output_ch );
+      new_value = map( new_value , 0, 1000, output_min, output_max );        
+      if ( new_value != output_channel[output_ch].last_output ) {
+        output_channel[output_ch].last_output = new_value;
+        change_cnt++;
       }
     }
+  }
+  if ( change_cnt ) update_motors();
+}
+
+Atm_mc_mixer& Atm_mc_mixer::motors( int8_t pin0, int8_t pin1, int8_t pin2, int8_t pin3, int8_t pin4, int8_t pin5, int8_t pin6, int8_t pin7 ) {
+  if ( pin0 > -1 ) output_channel[0].id_channel = pulse400.attach( pin0 );
+  if ( pin1 > -1 ) output_channel[1].id_channel = pulse400.attach( pin1 );
+  if ( pin2 > -1 ) output_channel[2].id_channel = pulse400.attach( pin2 );
+  if ( pin3 > -1 ) output_channel[3].id_channel = pulse400.attach( pin3 );
+  if ( pin4 > -1 ) output_channel[4].id_channel = pulse400.attach( pin4 );
+  if ( pin5 > -1 ) output_channel[5].id_channel = pulse400.attach( pin5 );
+  if ( pin6 > -1 ) output_channel[6].id_channel = pulse400.attach( pin6 );
+  if ( pin7 > -1 ) output_channel[7].id_channel = pulse400.attach( pin7 );
+  for ( int ch = 0; ch < NO_OF_OUTPUT_CHANNELS; ch++ ) 
+    if ( output_channel[ch].id_channel > -1 && ch > last_motor ) last_motor = ch;
+  return *this;
+}
+
+Atm_mc_mixer& Atm_mc_mixer::frequency( uint8_t freqmask, int16_t period /* = 2500 */ ) {
+  pulse400.frequency( freqmask, period );
+  return *this;
+}
+
+void Atm_mc_mixer::update_motors() {
+  for ( int ch = 0; ch < NO_OF_OUTPUT_CHANNELS; ch++ ) 
+    if ( output_channel[ch].id_channel > -1 ) {
+      pulse400.set_pulse( 
+        output_channel[ch].id_channel, 
+        map( constrain( output_channel[ch].last_output, 0, 1000 ), 0, 1000, output_min, output_max ), 
+            ch != last_motor );
+  }
 }
 
 // Configures the output range for all output channels
 
 Atm_mc_mixer& Atm_mc_mixer::output( int min, int max ) {
-  for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
-    output_channel[output_ch].min = min;
-    output_channel[output_ch].max = max;
-  }
-  return *this;
-}
-
-// Configures the output range for a single output channel
-
-Atm_mc_mixer& Atm_mc_mixer::output( int output_ch, int min, int max ) {
-  output_channel[output_ch].min = min;
-  output_channel[output_ch].max = max;
+  this->output_min = min;
+  this->output_max = max;
   return *this;
 }
 
@@ -200,20 +211,6 @@ Atm_mc_mixer& Atm_mc_mixer::start() {
 
 Atm_mc_mixer& Atm_mc_mixer::stop() {
   trigger( EVT_STOP );
-  return *this;
-}
-
-/*
- * onChange() push connector variants ( slots 1, autostore 0, broadcast 0 )
- */
-
-Atm_mc_mixer& Atm_mc_mixer::onChange( Machine& machine, int event ) {
-  onPush( connectors, ON_CHANGE, 0, 1, 1, machine, event );
-  return *this;
-}
-
-Atm_mc_mixer& Atm_mc_mixer::onChange( atm_cb_push_t callback, int idx ) {
-  onPush( connectors, ON_CHANGE, 0, 1, 1, callback, idx );
   return *this;
 }
 
