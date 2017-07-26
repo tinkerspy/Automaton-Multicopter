@@ -15,21 +15,20 @@
 
 typedef struct {
     int min, max;
-    int value, raw;
+    int value, raw; // We could drop the raw and save 4 * 2 = 8 bytes!
     bool master;
 } input_channel_struct;
 
 typedef struct {
-    int last_output;    
+    int value;    
     int8_t mix[NO_OF_INPUT_CHANNELS];
-    int8_t id_channel = -1;
 } output_channel_struct;
 
 class Atm_mc_mixer: public Machine {
 
  public:
   enum { IDLE, RUN }; // STATES
-  enum { EVT_START, EVT_STOP, ELSE }; // EVENTS
+  enum { EVT_START, EVT_STOP, EVT_UPDATE, ELSE }; // EVENTS
   enum { CFG_MANUAL, CFG_QUADX };
   Atm_mc_mixer( void ) : Machine() {};
   Atm_mc_mixer& begin(  int personality = CFG_QUADX );
@@ -43,6 +42,7 @@ class Atm_mc_mixer: public Machine {
   Atm_mc_mixer& stop( void );
   Atm_mc_mixer& set( int input_ch, int value );
   int get( int input_ch, bool raw = false );
+  int read( int output_ch );
   Atm_mc_mixer& motors( int8_t pin0 = -1, int8_t pin1 = -1, int8_t pin2 = -1, int8_t pin3 = -1, int8_t pin4 = -1, int8_t pin5 = -1, int8_t pin6 = -1, int8_t pin7 = -1 );
   Atm_mc_mixer& mix( int output_ch, int8_t input_ch0, int8_t input_ch1, int8_t input_ch2, int8_t input_ch3 );
   Atm_mc_mixer& mix( int output_ch );
@@ -64,35 +64,7 @@ class Atm_mc_mixer: public Machine {
   output_channel_struct output_channel[NO_OF_OUTPUT_CHANNELS];
   byte master_input;
   int8_t last_motor = 0;
-  int16_t output_min, output_max;
+  int16_t output_min = 1000, output_max = 2000;
 };
 
-/*
-Automaton::ATML::begin - Automaton Markup Language
-
-<?xml version="1.0" encoding="UTF-8"?>
-<machines>
-  <machine name="Atm_mc_mixer">
-    <states>
-      <IDLE index="0" sleep="1">
-        <EVT_START>RUN</EVT_START>
-      </IDLE>
-      <RUN index="1" sleep="1">
-        <EVT_STOP>IDLE</EVT_STOP>
-      </RUN>
-    </states>
-    <events>
-      <EVT_START index="0" access="PUBLIC"/>
-      <EVT_STOP index="1" access="PUBLIC"/>
-    </events>
-    <connectors>
-      <CHANGE autostore="0" broadcast="0" dir="PUSH" slots="1"/>
-    </connectors>
-    <methods>
-    </methods>
-  </machine>
-</machines>
-
-Automaton::ATML::end
-*/
 
