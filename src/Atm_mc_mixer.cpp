@@ -106,7 +106,7 @@ void Atm_mc_mixer::update_outputs() {
   for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
     if ( output_channel[output_ch].mix[master_input] != 0 ) {
       int new_value = calculate_output( output_ch );
-      new_value = map( constrain( new_value, 0, 1000 ), 0, 1000, output_min, output_max );        
+      new_value = map( new_value, 0, 1000, output_min, output_max );        
       if ( new_value != output_channel[output_ch].value ) {
         output_channel[output_ch].value = new_value;
         change_cnt++;
