@@ -48,23 +48,26 @@ class Atm_mc_mixer: public Machine {
   Atm_mc_mixer& mix( int output_ch );
   Atm_mc_mixer& input( int input_ch, int min, int max );
   Atm_mc_mixer& input( int min, int max );
-  Atm_mc_mixer& output( int min, int max );
+  Atm_mc_mixer& output( int min, int max, int deadline = -1 );
   Atm_mc_mixer& master( int input_ch );
-  Atm_mc_mixer& frequency( uint8_t freqmask, int16_t period = 2500 );
-
+  Atm_mc_mixer& frequency( uint16_t f );
+  Atm_mc_mixer& setOutput( int output_ch, int speed );
+  Atm_mc_mixer& setOutput( int speed );
+ 
  private:
   enum { ENT_IDLE, ENT_RUN }; // ACTIONS
   enum { CONN_MAX }; // CONNECTORS
   int event( int id ); 
   void action( int id ); 
   int calculate_output( int output_ch );
-  void update_outputs( void );
+  void update_outputs( bool force = false );
   void update_motors( void );
   input_channel_struct input_channel[NO_OF_INPUT_CHANNELS];
   output_channel_struct output_channel[NO_OF_OUTPUT_CHANNELS];
   byte master_input;
   int8_t last_motor = 0;
   int16_t output_min = 1000, output_max = 2000;
+  bool update;
 };
 
 

@@ -47,6 +47,7 @@ Atm_mc_mixer& Atm_mc_mixer::config( int personality /* = CFG_QUADX */ ) {
 
 int Atm_mc_mixer::event( int id ) {
   switch ( id ) {
+    case EVT_UPDATE: return update;
   }
   return 0;
 }
@@ -61,15 +62,28 @@ int Atm_mc_mixer::event( int id ) {
 void Atm_mc_mixer::action( int id ) {
   switch ( id ) {
     case ENT_IDLE:
-      for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) { // Zero all motors
-        output_channel[output_ch].value = output_min; 
-      }
-      update_outputs();
+      setOutput( 0 );
       break;
     case ENT_RUN:
+      update = false;
       update_outputs();
       break;  
   }
+}
+
+Atm_mc_mixer& Atm_mc_mixer::setOutput( int output_ch, int speed ) {
+  output_channel[output_ch].value = speed; 
+  update_outputs();
+  return *this;  
+}
+
+Atm_mc_mixer& Atm_mc_mixer::setOutput( int speed ) {
+  
+  for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) { // Zero all motors
+    output_channel[output_ch].value = speed; 
+  }
+  update_outputs();
+  return *this;  
 }
 
 // Sets the input channel mix for a motor
@@ -101,13 +115,13 @@ int Atm_mc_mixer::calculate_output( int output_ch ) {
 
 // Updates all output channels and optionally call the update_motors() method
 
-void Atm_mc_mixer::update_outputs() {
+void Atm_mc_mixer::update_outputs( bool force /* = false */ ) {
   int8_t change_cnt = 0;
   for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
     if ( output_channel[output_ch].mix[master_input] != 0 ) {
       int new_value = calculate_output( output_ch );
       new_value = map( new_value, 0, 1000, output_min, output_max );        
-      if ( new_value != output_channel[output_ch].value ) {
+      if ( new_value != output_channel[output_ch].value || force ) {
         output_channel[output_ch].value = new_value;
         change_cnt++;
       }
@@ -128,24 +142,26 @@ Atm_mc_mixer& Atm_mc_mixer::motors( int8_t pin0, int8_t pin1, int8_t pin2, int8_
   return *this;
 }
 
-Atm_mc_mixer& Atm_mc_mixer::frequency( uint8_t freqmask, int16_t period /* = 2500 */ ) {
-  pulse400.frequency( freqmask, period );
+Atm_mc_mixer& Atm_mc_mixer::frequency( uint16_t f ) {
+  pulse400.frequency( f );
   return *this;
 }
 
 void Atm_mc_mixer::update_motors() {
   for ( int ch = 0; ch < NO_OF_OUTPUT_CHANNELS; ch++ ) 
     if ( output_channel[ch].mix[master_input] != 0 ) {
-      pulse400.set_pulse( ch, output_channel[ch].value, true );
+      pulse400.pulse( ch, output_channel[ch].value, true );
     }
   pulse400.update();  
 }
 
 // Configures the output range for all output channels
 
-Atm_mc_mixer& Atm_mc_mixer::output( int min, int max ) {
-  this->output_min = min;
-  this->output_max = max;
+Atm_mc_mixer& Atm_mc_mixer::output( int min, int max, int deadline ) {
+  output_min = min;
+  output_max = max;
+  setOutput( 0 );
+  pulse400.deadline( deadline > -1 ? deadline : output_min );
   return *this;
 }
 
@@ -174,7 +190,7 @@ Atm_mc_mixer& Atm_mc_mixer::set( int input_ch, int value ) {
   value = constrain( value, 0, 1000 ); // document this!
   input_channel[input_ch].value = 
     map( value, 0, 1000, input_channel[input_ch].min, input_channel[input_ch].max ); 
-  trigger( EVT_UPDATE );
+  update = true;
   return *this;
 }
 
