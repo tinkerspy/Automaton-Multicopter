@@ -8,10 +8,9 @@ typedef struct {
     uint8_t pin;
     uint16_t value;
     uint16_t last_value;    
-    uint16_t last_output;    
     uint32_t last_high;
-    uint16_t min, max, min_in, max_in, min_out, max_out;
-    uint16_t sticky;
+    uint16_t min, max;  // Save 2x6 bytes by changing into int8_t offsets from 1000/2000
+    uint8_t sticky;
     int logical;
 } rc_struct;
 
@@ -78,25 +77,4 @@ class Atm_mc_receiver: public Machine {
 
 };
 
-/*
-Automaton::ATML::begin - Automaton Markup Language
-
-<?xml version="1.0" encoding="UTF-8"?>
-<machines>
-  <machine name="Atm_mc_receiver">
-    <states>
-      <IDLE index="0" sleep="1">
-      </IDLE>
-    </states>
-    <events>
-    </events>
-    <connectors>
-    </connectors>
-    <methods>
-    </methods>
-  </machine>
-</machines>
-
-Automaton::ATML::end
-*/
 

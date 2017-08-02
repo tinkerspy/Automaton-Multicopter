@@ -32,7 +32,6 @@ Atm_mc_receiver& Atm_mc_receiver::begin( int p0, int p1, int p2, int p3, int p4,
   for ( int pch = 0; pch < CHANNELS; pch++ ) {
     channel[pch].logical = channel[pch].pin > -1 ? pch : -1; 
     physical[pch] = pch;
-    channel[pch].last_output = -1;
   }
   timer.set( 1000 );
   return *this;          
@@ -73,11 +72,7 @@ void Atm_mc_receiver::action( int id ) {
           channel[pch].last_value = channel[pch].value; 
           if ( channel[pch].value < channel[pch].min && channel[pch].value > 800  ) channel[pch].min = channel[pch].value;
           if ( channel[pch].value > channel[pch].max && channel[pch].value < 2200 ) channel[pch].max = channel[pch].value;
-          uint16_t v = translate( pch );
-          if ( v != channel[pch].last_output ) {  
-            push( connectors, ON_CHANGE, channel[pch].logical, v, channel[pch].logical );
-            channel[pch].last_output = v;
-          }
+          push( connectors, ON_CHANGE, channel[pch].logical, translate( pch ), channel[pch].logical );
         }        
       }    
       return;
@@ -217,8 +212,7 @@ int Atm_mc_receiver::read( int lch, bool raw /* = 0 */ ) {
   if ( raw ) {
     return channel[pch].value;
   } else {
-    channel[pch].last_output = translate( pch );
-    return channel[pch].last_output;
+    return translate( pch );
   }
 }
 
