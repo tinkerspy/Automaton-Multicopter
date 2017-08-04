@@ -55,10 +55,10 @@ void MPU6050cf::requestSample( void ) {
   Wire.beginTransmission( address );
   Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
   Wire.endTransmission(false);
-#ifdef NON_BLOCKING
-  Wire.sendRequest(address,14, I2C_STOP );  // request a total of 14 registers  
-#else 
+#ifdef __AVR_ATmega328P__
   Wire.requestFrom( address, 14, true );
+#else 
+  Wire.sendRequest(address,14, I2C_STOP );  // request a total of 14 registers  
 #endif  
 }
 

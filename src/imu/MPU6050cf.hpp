@@ -1,9 +1,11 @@
 #pragma once
 
 #include "IMU.hpp"
+#ifdef __AVR_ATmega328P__
+#include <Wire.h>
+#else 
 #include <i2c_t3.h>
-
-#define NON_BLOCKING
+#endif
 
 class MPU6050cf : public IMU {
 
