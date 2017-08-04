@@ -104,7 +104,14 @@ Atm_pid& Atm_pid::pv( float processVariable ) {
   if ( timer.value == ATM_TIMER_OFF ) { 
   // Slave mode! (TODO: Moet ook nog state-afhankelijk zijn!)
   // IDLE? do nothing
+//    Serial.print( "calc sp=");
+//    Serial.print( setPoint );
+//    Serial.print( " pv=");
+//    Serial.print( this->processVariable );
+    
     controlVariable = calculate( setPoint, processVariable );
+//    Serial.print( " =");
+//    Serial.println( this->controlVariable );
 //    if ( controlVariable != last_cv ) {
       push( connectors, ON_CHANGE, 0, controlVariable + output_offset, 0 ); 
       last_cv = controlVariable;
