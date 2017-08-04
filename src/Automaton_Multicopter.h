@@ -10,8 +10,9 @@
 // Bundled state machines (components)
 
 #include <Automaton.h>
+#include <imu/MPU6050cf.hpp>
+
 #include <Atm_mc_receiver.hpp>
 #include <Atm_mc_mixer.hpp>
-#include <Atm_mc_esc.hpp>
-#include <Atm_mpu6050.hpp>
+#include <Atm_mc_accelgyro.hpp>
 #include <Atm_pid.hpp>

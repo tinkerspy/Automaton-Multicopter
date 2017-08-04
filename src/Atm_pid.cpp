@@ -10,7 +10,7 @@ Atm_pid& Atm_pid::begin( int sample_rate_ms, float Kp, float Ki, float Kd, float
     /*               ON_ENTER    ON_LOOP  ON_EXIT  EVT_TIMER  EVT_START  EVT_STOP  EVT_CHANGED  ELSE */
     /*    IDLE */          -1, ATM_SLEEP,      -1,        -1,       RUN,       -1,          -1,   -1,
     /*     RUN */          -1,        -1,      -1,    SAMPLE,        -1,     IDLE,          -1,   -1,
-    /*  SAMPLE */  ENT_SAMPLE,        -1,      -1,        -1,        -1,     IDLE,     CHANGED,  RUN,
+    /*  SAMPLE */  ENT_SAMPLE,        -1,      -1,        -1,        -1,     IDLE,          -1,  RUN,
     /* CHANGED */ ENT_CHANGED,        -1,      -1,        -1,        -1,     IDLE,          -1,  RUN,
   };
   // clang-format on
@@ -43,8 +43,6 @@ int Atm_pid::event( int id ) {
   switch ( id ) {
     case EVT_TIMER:
       return timer.expired( this );
-    case EVT_CHANGED:
-      return controlVariable != last_cv;
   }
   return 0;
 }
@@ -62,10 +60,7 @@ void Atm_pid::action( int id ) {
     case ENT_SAMPLE:
       push( connectors, ON_SAMPLE, 0, 0, 0 ); 
       controlVariable = calculate( setPoint, processVariable );
-      return;
-    case ENT_CHANGED:
       push( connectors, ON_CHANGE, 0, controlVariable + output_offset, 0 ); 
-      last_cv = controlVariable;
       return;
   }
 }
@@ -110,10 +105,10 @@ Atm_pid& Atm_pid::pv( float processVariable ) {
   // Slave mode! (TODO: Moet ook nog state-afhankelijk zijn!)
   // IDLE? do nothing
     controlVariable = calculate( setPoint, processVariable );
-    if ( controlVariable != last_cv ) {
+//    if ( controlVariable != last_cv ) {
       push( connectors, ON_CHANGE, 0, controlVariable + output_offset, 0 ); 
       last_cv = controlVariable;
-    }
+//    }
   }
   return *this;
 }

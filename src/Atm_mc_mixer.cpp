@@ -66,7 +66,7 @@ void Atm_mc_mixer::action( int id ) {
       break;
     case ENT_RUN:
       update = false;
-      update_outputs();
+      update_outputs( true );
       break;  
   }
 }
