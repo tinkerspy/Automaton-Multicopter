@@ -30,8 +30,12 @@ Atm_mc_accelgyro& Atm_mc_accelgyro::begin( IMU & imu, uint32_t sample_rate_us ) 
 int Atm_mc_accelgyro::event( int id ) {
   switch ( id ) {
     case EVT_TIMER:
-      return ( microtimer == ATM_TIMER_OFF ? 0 : micros() - microtimer >= microtimer_value ) 
-              && imu->lockChannel( true );
+      if ( microtimer == ATM_TIMER_OFF ? 0 : micros() - microtimer >= microtimer_value && imu->lockChannel( true ) ) {
+        microtimer = micros();
+        return 1;
+      } else {
+        return 0;
+      }
     case EVT_READ:
       return imu->sampleReady();
     }
@@ -51,7 +55,6 @@ void Atm_mc_accelgyro::action( int id ) {
     case ENT_IDLE:
       return;
     case ENT_RUN:    
-      microtimer = micros();
       return;
     case ENT_SAMPLE:
       if ( imu->sampleAvailable() ) {
@@ -66,6 +69,12 @@ void Atm_mc_accelgyro::action( int id ) {
       axis[1].value = imu->angleX() * 100;
       axis[2].value = imu->angleY() * 100;
       push( connectors, ON_UPDATE, 0, read( PITCH ), read( ROLL ) );
+      for ( int ax = 0; ax < 3; ax++ ) {
+        if ( axis[ax].value != axis[ax].last_value ) {
+          push( connectors, ON_CHANGE, ax, read( ax ), 0 );
+          axis[ax].last_value = axis[ax].value;
+        }
+      }
       return;
   }
 }

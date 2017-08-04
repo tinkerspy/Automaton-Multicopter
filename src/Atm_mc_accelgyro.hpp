@@ -14,6 +14,8 @@ typedef struct {
 class Atm_mc_accelgyro: public Machine {
 
  public:
+  enum { YAW, PITCH, ROLL };
+  enum { REVERSE = B10000000 };
   enum { IDLE, RUN, SAMPLE, READING }; // STATES
   enum { EVT_TIMER, EVT_READ, EVT_START, EVT_STOP, ELSE }; // EVENTS
   Atm_mc_accelgyro( void ) : Machine() {};
@@ -40,8 +42,6 @@ class Atm_mc_accelgyro: public Machine {
   Atm_mc_accelgyro& calibrate( int ypr );
   
  private:
-  enum { YAW, PITCH, ROLL };
-  enum { REVERSE = B10000000 };
   enum { ENT_IDLE, ENT_RUN, ENT_SAMPLE, ENT_READING }; // ACTIONS
   enum { ON_CHANGE, ON_UPDATE = 3, CONN_MAX }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
