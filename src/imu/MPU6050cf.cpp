@@ -50,7 +50,6 @@ bool MPU6050cf::sampleAvailable( void ) {
   return true; 
 }
 
-
 void MPU6050cf::requestSample( void ) {
   Wire.beginTransmission( address );
   Wire.write(0x3B);  // starting with register 0x3B (ACCEL_XOUT_H)
