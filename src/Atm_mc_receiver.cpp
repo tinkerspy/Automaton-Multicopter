@@ -8,6 +8,8 @@
 // TODO: After turning off the transmitter, the object should stop sending updates (?) read should return -1???
 // onConnect handler (state connect/disconnect)???
 
+// TODO: onChange() triggert te vaak, toch filteren op raw & cooked1
+
 Atm_mc_receiver& Atm_mc_receiver::begin( int p0, int p1, int p2, int p3, int p4, int p5 ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
