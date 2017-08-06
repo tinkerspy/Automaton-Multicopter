@@ -37,15 +37,15 @@ class Atm_mc_mixer: public Machine {
   Atm_mc_mixer& start( void );
   Atm_mc_mixer& stop( void );
   Atm_mc_mixer& set( int input_ch, int value );
-  int get( int input_ch, bool raw = false );
+  int readInput( int input_ch, bool raw = false );
   Atm_mc_mixer& mix( int output_ch, int8_t input_ch0, int8_t input_ch1, int8_t input_ch2, int8_t input_ch3 );
   Atm_mc_mixer& mix( int output_ch );
-  Atm_mc_mixer& input( int input_ch, int min, int max );
-  Atm_mc_mixer& input( int min, int max );
-  Atm_mc_mixer& output( int output_ch, int min, int max );
-  Atm_mc_mixer& output( int min, int max );
+  Atm_mc_mixer& inputRange( int input_ch, int min, int max );
+  Atm_mc_mixer& inputRange( int min, int max );
+  Atm_mc_mixer& outputRange( int output_ch, int min, int max );
+  Atm_mc_mixer& outputRange( int min, int max );
   Atm_mc_mixer& master( int input_ch );
-  int16_t read( int output_ch );
+  int16_t readOutput( int output_ch );
 
  private:
   enum { ENT_IDLE, ENT_RUN }; // ACTIONS

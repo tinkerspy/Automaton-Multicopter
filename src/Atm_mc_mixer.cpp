@@ -27,9 +27,9 @@ Atm_mc_mixer& Atm_mc_mixer::config( int personality /* = CFG_QUADX */ ) {
       mix( 1, +100, +100, -100, +100 ); 
       mix( 2, -100, +100, +100, +100 ); 
       mix( 3, +100, -100, +100, +100 );
-      input( -250, 250 );
-      input( 3, 0, 1000 );
-      output( -1, -1 );
+      inputRange( -250, 250 );
+      inputRange( 3, 0, 1000 );
+      outputRange( -1, -1 );
       master( 3 );
       break;
   }
@@ -120,7 +120,7 @@ void Atm_mc_mixer::update_outputs() {
 
 // Configures the output range for all output channels
 
-Atm_mc_mixer& Atm_mc_mixer::output( int min, int max ) {
+Atm_mc_mixer& Atm_mc_mixer::outputRange( int min, int max ) {
   for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
     output_channel[output_ch].min = min;
     output_channel[output_ch].max = max;
@@ -130,7 +130,7 @@ Atm_mc_mixer& Atm_mc_mixer::output( int min, int max ) {
 
 // Configures the output range for a single output channel
 
-Atm_mc_mixer& Atm_mc_mixer::output( int output_ch, int min, int max ) {
+Atm_mc_mixer& Atm_mc_mixer::outputRange( int output_ch, int min, int max ) {
   output_channel[output_ch].min = min;
   output_channel[output_ch].max = max;
   return *this;
@@ -138,7 +138,7 @@ Atm_mc_mixer& Atm_mc_mixer::output( int output_ch, int min, int max ) {
 
 // Configures the input range for all input channels
 
-Atm_mc_mixer& Atm_mc_mixer::input( int min, int max ) {
+Atm_mc_mixer& Atm_mc_mixer::inputRange( int min, int max ) {
   for ( int input_ch = 0; input_ch < NO_OF_INPUT_CHANNELS; input_ch++ ) {
     input_channel[input_ch].min = min;
     input_channel[input_ch].max = max;
@@ -148,7 +148,7 @@ Atm_mc_mixer& Atm_mc_mixer::input( int min, int max ) {
 
 // Configures the input range for a single input channel
 
-Atm_mc_mixer& Atm_mc_mixer::input( int input_ch, int min, int max ) {
+Atm_mc_mixer& Atm_mc_mixer::inputRange( int input_ch, int min, int max ) {
   input_channel[input_ch].min = min;
   input_channel[input_ch].max = max;
   return *this;
@@ -164,11 +164,11 @@ Atm_mc_mixer& Atm_mc_mixer::set( int input_ch, int value ) {
   return *this;
 }
 
-int Atm_mc_mixer::get( int input_ch, bool raw /* = false */ ) {
+int Atm_mc_mixer::readInput( int input_ch, bool raw /* = false */ ) {
   return raw ? input_channel[input_ch].raw : input_channel[input_ch].value;
 }
 
-int16_t Atm_mc_mixer::read( int output_ch ) {
+int16_t Atm_mc_mixer::readOutput( int output_ch ) {
   return output_channel[output_ch].last_output;
 }
 
