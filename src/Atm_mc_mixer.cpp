@@ -7,22 +7,17 @@
 Atm_mc_mixer& Atm_mc_mixer::begin( int personality /* = CFG_QUADX */ ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
-    /*          ON_ENTER    ON_LOOP  ON_EXIT  EVT_START  EVT_STOP  EVT_UPDATE ELSE */
-    /*  IDLE */ ENT_IDLE, ATM_SLEEP,      -1,       RUN,       -1,         -1,  -1,
-    /*   RUN */  ENT_RUN,        -1,      -1,        -1,     IDLE,        RUN,  -1,
+    /*          ON_ENTER    ON_LOOP  ON_EXIT  EVT_START  EVT_STOP  ELSE */
+    /*  IDLE */ ENT_IDLE, ATM_SLEEP,      -1,       RUN,       -1,   -1,
+    /*   RUN */  ENT_RUN, ATM_SLEEP,      -1,        -1,     IDLE,   -1,
   };
   // clang-format on
   Machine::begin( state_table, ELSE );
-  config( personality );
+  config( CFG_QUADX );
   return *this;          
 }
 
 Atm_mc_mixer& Atm_mc_mixer::config( int personality /* = CFG_QUADX */ ) {
-  for ( int ch = 0; ch < NO_OF_OUTPUT_CHANNELS; ch++ ) 
-    mix( ch, 0, 0, 0, 0 );
-  input( 0, 1000 );
-  output( 1000, 2000 );
-  master( 3 );  
   switch( personality ) {
     case CFG_QUADX:
       // Configuration for a standard X-quadcopter 
@@ -34,7 +29,7 @@ Atm_mc_mixer& Atm_mc_mixer::config( int personality /* = CFG_QUADX */ ) {
       mix( 3, +100, -100, +100, +100 );
       input( -250, 250 );
       input( 3, 0, 1000 );
-      output( 1000, 2000 );
+      output( -1, -1 );
       master( 3 );
       break;
   }
@@ -47,7 +42,6 @@ Atm_mc_mixer& Atm_mc_mixer::config( int personality /* = CFG_QUADX */ ) {
 
 int Atm_mc_mixer::event( int id ) {
   switch ( id ) {
-    case EVT_UPDATE: return update;
   }
   return 0;
 }
@@ -62,106 +56,83 @@ int Atm_mc_mixer::event( int id ) {
 void Atm_mc_mixer::action( int id ) {
   switch ( id ) {
     case ENT_IDLE:
-      setOutput( 0 );
+      for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) { // Set all speeds to 0
+        if ( output_channel[output_ch].enabled ) 
+          connectors[ON_CHANGE].push( 0, output_ch );
+      }
       break;
     case ENT_RUN:
-      update = false;
-      update_outputs( true );
+      update_outputs();
       break;  
   }
 }
 
-Atm_mc_mixer& Atm_mc_mixer::setOutput( int output_ch, int speed ) {
-  output_channel[output_ch].value = speed; 
-  update_outputs();
-  return *this;  
-}
-
-Atm_mc_mixer& Atm_mc_mixer::setOutput( int speed ) {
-  
-  for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) { // Zero all motors
-    output_channel[output_ch].value = speed; 
-  }
-  update_outputs();
-  return *this;  
-}
-
-// Sets the input channel mix for a motor
+// Sets the input channel mix for an output channel (motor) and enables the channel
 
 Atm_mc_mixer& Atm_mc_mixer::mix( int output_ch, int8_t input_ch0, int8_t input_ch1, int8_t input_ch2, int8_t input_ch3 ) {
   output_channel[output_ch].mix[0] = input_ch0;
   output_channel[output_ch].mix[1] = input_ch1;
   output_channel[output_ch].mix[2] = input_ch2;
   output_channel[output_ch].mix[3] = input_ch3;
+  output_channel[output_ch].enabled = true;
   return *this;
 }
 
-// Sets an output channel as master ( default = 3 )
+// Disables the output channel (motor)
+
+Atm_mc_mixer& Atm_mc_mixer::mix( int output_ch ) {
+  output_channel[output_ch].enabled = false;
+  return *this;
+}
+
+// Sets an output channel as master ( -1 = disabled )
 
 Atm_mc_mixer& Atm_mc_mixer::master( int input_ch ) {
   this->master_input = input_ch;
   return *this;
 }
 
-// Calculates the output channel value according to the inputs and the configured mix (output 0..1000)
+// Calculates the output channel value according to the inputs and the configured mix
 
 int Atm_mc_mixer::calculate_output( int output_ch ) { 
   int v = 0;
   for ( int input_ch = 0; input_ch < NO_OF_INPUT_CHANNELS; input_ch++ )
     v += input_channel[input_ch].value * ( output_channel[output_ch].mix[input_ch] / 100.0 );
-  if ( input_channel[master_input].value == 0 ) v = 0;
+  if ( master_input > -1 && input_channel[master_input].value == 0 ) v = 0;
   return constrain( v, 0, 1000 ); 
 }
 
-// Updates all output channels and optionally call the update_motors() method
+// Updates all output channels and optionally call the onChange() method
 
-void Atm_mc_mixer::update_outputs( bool force /* = false */ ) {
-  int8_t change_cnt = 0;
-  for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
-    if ( output_channel[output_ch].mix[master_input] != 0 ) {
-      int new_value = calculate_output( output_ch );
-      new_value = map( new_value, 0, 1000, output_min, output_max );        
-      if ( new_value != output_channel[output_ch].value || force ) {
-        output_channel[output_ch].value = new_value;
-        change_cnt++;
+void Atm_mc_mixer::update_outputs() {
+    for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
+      if ( output_channel[output_ch].enabled ) {
+        int new_value = calculate_output( output_ch );
+        if ( new_value != output_channel[output_ch].last_output ) {
+          output_channel[output_ch].last_output = new_value;
+          if ( output_channel[output_ch].min != -1 && output_channel[output_ch].max != -1 ) 
+            new_value = map( new_value , 0, 1000, output_channel[output_ch].min, output_channel[output_ch].max );
+          connectors[ON_CHANGE].push( new_value, output_ch ); 
+        }
       }
     }
-  }
-  if ( change_cnt ) update_motors();
-}
-
-Atm_mc_mixer& Atm_mc_mixer::motors( int8_t pin0, int8_t pin1, int8_t pin2, int8_t pin3, int8_t pin4, int8_t pin5, int8_t pin6, int8_t pin7 ) {
-  pulse400.attach( pin0, 0 );
-  pulse400.attach( pin1, 1 );
-  pulse400.attach( pin2, 2 );
-  pulse400.attach( pin3, 3 );
-  pulse400.attach( pin4, 4 );
-  pulse400.attach( pin5, 5 );
-  pulse400.attach( pin6, 6 );
-  pulse400.attach( pin7, 7 );
-  return *this;
-}
-
-Atm_mc_mixer& Atm_mc_mixer::frequency( uint16_t f ) {
-  pulse400.frequency( f );
-  return *this;
-}
-
-void Atm_mc_mixer::update_motors() {
-  for ( int ch = 0; ch < NO_OF_OUTPUT_CHANNELS; ch++ ) 
-    if ( output_channel[ch].mix[master_input] != 0 ) {
-      pulse400.pulse( ch, output_channel[ch].value, true );
-    }
-  pulse400.update();  
 }
 
 // Configures the output range for all output channels
 
-Atm_mc_mixer& Atm_mc_mixer::output( int min, int max, int deadline ) {
-  output_min = min;
-  output_max = max;
-  setOutput( 0 );
-  pulse400.deadline( deadline > -1 ? deadline : output_min );
+Atm_mc_mixer& Atm_mc_mixer::output( int min, int max ) {
+  for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
+    output_channel[output_ch].min = min;
+    output_channel[output_ch].max = max;
+  }
+  return *this;
+}
+
+// Configures the output range for a single output channel
+
+Atm_mc_mixer& Atm_mc_mixer::output( int output_ch, int min, int max ) {
+  output_channel[output_ch].min = min;
+  output_channel[output_ch].max = max;
   return *this;
 }
 
@@ -188,22 +159,17 @@ Atm_mc_mixer& Atm_mc_mixer::input( int input_ch, int min, int max ) {
 Atm_mc_mixer& Atm_mc_mixer::set( int input_ch, int value ) {
   input_channel[input_ch].raw = value;
   value = constrain( value, 0, 1000 ); // document this!
-  input_channel[input_ch].value = 
-    map( value, 0, 1000, input_channel[input_ch].min, input_channel[input_ch].max ); 
-  update = true;
+  input_channel[input_ch].value = map( value, 0, 1000, input_channel[input_ch].min, input_channel[input_ch].max ); 
+  if ( state() ) update_outputs();
   return *this;
 }
-
-// Returns the current value for the input axis (cooked or raw)
 
 int Atm_mc_mixer::get( int input_ch, bool raw /* = false */ ) {
   return raw ? input_channel[input_ch].raw : input_channel[input_ch].value;
 }
 
-// Returns the current value for the output channel (motor)
-
-int Atm_mc_mixer::read( int output_ch ) {
-  return output_channel[output_ch].value;
+int16_t Atm_mc_mixer::read( int output_ch ) {
+  return output_channel[output_ch].last_output;
 }
 
 /* Optionally override the default trigger() method
@@ -241,13 +207,27 @@ Atm_mc_mixer& Atm_mc_mixer::stop() {
   return *this;
 }
 
+/*
+ * onChange() push connector variants ( slots 1, autostore 0, broadcast 0 )
+ */
+
+Atm_mc_mixer& Atm_mc_mixer::onChange( Machine& machine, int event ) {
+  onPush( connectors, ON_CHANGE, 0, 1, 1, machine, event );
+  return *this;
+}
+
+Atm_mc_mixer& Atm_mc_mixer::onChange( atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_CHANGE, 0, 1, 1, callback, idx );
+  return *this;
+}
+
 /* State trace method
  * Sets the symbol table and the default logging method for serial monitoring
  */
 
 Atm_mc_mixer& Atm_mc_mixer::trace( Stream & stream ) {
   Machine::setTrace( &stream, atm_serial_debug::trace,
-    "FC_MIXER\0EVT_START\0EVT_STOP\0EVT_UPDATE\0ELSE\0IDLE\0RUN" );
+    "FC_MIXER\0EVT_START\0EVT_STOP\0ELSE\0IDLE\0RUN" );
   return *this;
 }
 
