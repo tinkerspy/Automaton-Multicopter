@@ -32,12 +32,12 @@ class Atm_mc_accelgyro: public Machine {
   Atm_mc_accelgyro& start( void );
   Atm_mc_accelgyro& stop( void );
 
-  int read( int ypr );
-  Atm_mc_accelgyro& range( int ypr, int toLow, int toHigh );
-  Atm_mc_accelgyro& range( int toLow, int toHigh );
+  int readOutput( int ypr );
+  Atm_mc_accelgyro& outputRange( int ypr, int toLow, int toHigh );
+  Atm_mc_accelgyro& outputRange( int toLow, int toHigh );
   Atm_mc_accelgyro& angle( int ypr, int max_angle );
   Atm_mc_accelgyro& angle( int max_angle );
-  Atm_mc_accelgyro& mapping( int axis0, int axis1, int axis2 );
+  Atm_mc_accelgyro& inputMapping( int axis0, int axis1, int axis2 );
   Atm_mc_accelgyro& calibrate( int ypr, int v );
   Atm_mc_accelgyro& calibrate( int ypr );
   

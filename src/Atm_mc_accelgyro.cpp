@@ -18,8 +18,8 @@ Atm_mc_accelgyro& Atm_mc_accelgyro::begin( IMU & imu, uint32_t sample_rate_us ) 
   microtimer_value = sample_rate_us;
   this->imu = &imu;
   this->imu->init();
-  mapping( YAW, PITCH, ROLL );
-  range( -90, +90 );
+  inputMapping( YAW, PITCH, ROLL );
+  outputRange( -90, +90 );
   return *this;          
 }
 
@@ -68,10 +68,10 @@ void Atm_mc_accelgyro::action( int id ) {
       axis[0].value = imu->angleZ() * 100;
       axis[1].value = imu->angleX() * 100;
       axis[2].value = imu->angleY() * 100;
-      push( connectors, ON_UPDATE, 0, read( PITCH ), read( ROLL ) );
+      push( connectors, ON_UPDATE, 0, readOutput( PITCH ), readOutput( ROLL ) );
       for ( int ax = 0; ax < 3; ax++ ) {
         if ( axis[ax].value != axis[ax].last_value ) {
-          push( connectors, ON_CHANGE, ax, read( ax ), 0 );
+          push( connectors, ON_CHANGE, ax, readOutput( ax ), 0 );
           axis[ax].last_value = axis[ax].value;
         }
       }
@@ -79,7 +79,7 @@ void Atm_mc_accelgyro::action( int id ) {
   }
 }
 
-Atm_mc_accelgyro& Atm_mc_accelgyro::mapping( int axis0, int axis1, int axis2 ) {
+Atm_mc_accelgyro& Atm_mc_accelgyro::inputMapping( int axis0, int axis1, int axis2 ) {
   axis[0].logical = axis0 & ~REVERSE;
   axis[0].reverse = axis0 & REVERSE;
   axis[1].logical = axis1 & ~REVERSE;
@@ -92,16 +92,16 @@ Atm_mc_accelgyro& Atm_mc_accelgyro::mapping( int axis0, int axis1, int axis2 ) {
   return *this;  
 }
 
-Atm_mc_accelgyro& Atm_mc_accelgyro::range( int ypr, int toLow, int toHigh ) {
+Atm_mc_accelgyro& Atm_mc_accelgyro::outputRange( int ypr, int toLow, int toHigh ) {
   ypr = physical[ypr];
   axis[ypr].min_out = toLow;
   axis[ypr].max_out = toHigh;
   return *this;
 }
 
-Atm_mc_accelgyro& Atm_mc_accelgyro::range( int toLow, int toHigh ) {
+Atm_mc_accelgyro& Atm_mc_accelgyro::outputRange( int toLow, int toHigh ) {
   for ( int i = YAW; i < ROLL + 1; i++ ) {
-    range( i, toLow, toHigh );
+    outputRange( i, toLow, toHigh );
   }
   return *this;
 }
@@ -115,7 +115,7 @@ Atm_mc_accelgyro& Atm_mc_accelgyro::angle( int max_angle ) {
 
 Atm_mc_accelgyro& Atm_mc_accelgyro::angle( int ypr, int max_angle ) {
   int outside = ( 90 - max_angle ) * ( 1001 / ( max_angle * 2 ) );
-  range( ypr, 0 - outside, 1000 + outside );
+  outputRange( ypr, 0 - outside, 1000 + outside );
   return *this;
 }
 
@@ -136,7 +136,7 @@ int Atm_mc_accelgyro::state( void ) {
   return Machine::state();
 }
 
-int Atm_mc_accelgyro::read( int ypr ) {
+int Atm_mc_accelgyro::readOutput( int ypr ) {
   ypr = physical[ypr];
   int v = axis[ypr].value + axis[ypr].offset;
   if ( axis[ypr].reverse ) v = v * -1;

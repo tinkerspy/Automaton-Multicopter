@@ -33,7 +33,7 @@ class Atm_mc_receiver: public Machine {
   int state( void );
   void handleInterruptPWM( int pch );
   void handleInterruptPPM();
-  int read( int lch, bool raw = 0 );
+  int readOutput( int lch, bool raw = 0 );
   Atm_mc_receiver& ppm( void );
   Atm_mc_receiver& pwm( void );
   Atm_mc_receiver& start( void );

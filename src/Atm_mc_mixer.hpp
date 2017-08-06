@@ -24,7 +24,7 @@ class Atm_mc_mixer: public Machine {
 
  public:
   enum { IDLE, RUN }; // STATES
-  enum { EVT_START, EVT_STOP, ELSE }; // EVENTS
+  enum { EVT_START, EVT_STOP, EVT_UPDATE, ELSE }; // EVENTS
   enum { CFG_MANUAL, CFG_QUADX };
   Atm_mc_mixer( void ) : Machine() {};
   Atm_mc_mixer& begin(  int personality = CFG_QUADX );
@@ -34,6 +34,8 @@ class Atm_mc_mixer: public Machine {
   int state( void );
   Atm_mc_mixer& onChange( Machine& machine, int event = 0 );
   Atm_mc_mixer& onChange( atm_cb_push_t callback, int idx = 0 );
+  Atm_mc_mixer& onUpdate( Machine& machine, int event = 0 );
+  Atm_mc_mixer& onUpdate( atm_cb_push_t callback, int idx = 0 );
   Atm_mc_mixer& start( void );
   Atm_mc_mixer& stop( void );
   Atm_mc_mixer& set( int input_ch, int value );
@@ -45,7 +47,7 @@ class Atm_mc_mixer: public Machine {
   Atm_mc_mixer& outputRange( int output_ch, int min, int max );
   Atm_mc_mixer& outputRange( int min, int max );
   Atm_mc_mixer& master( int input_ch );
-  int16_t readOutput( int output_ch );
+  int readOutput( int output_ch );
 
  private:
   enum { ENT_IDLE, ENT_RUN }; // ACTIONS
@@ -58,6 +60,7 @@ class Atm_mc_mixer: public Machine {
   input_channel_struct input_channel[NO_OF_INPUT_CHANNELS];
   output_channel_struct output_channel[NO_OF_OUTPUT_CHANNELS];
   byte master_input;
+  bool update;
 };
 
 

@@ -7,9 +7,9 @@
 Atm_mc_mixer& Atm_mc_mixer::begin( int personality /* = CFG_QUADX */ ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
-    /*          ON_ENTER    ON_LOOP  ON_EXIT  EVT_START  EVT_STOP  ELSE */
-    /*  IDLE */ ENT_IDLE, ATM_SLEEP,      -1,       RUN,       -1,   -1,
-    /*   RUN */  ENT_RUN, ATM_SLEEP,      -1,        -1,     IDLE,   -1,
+    /*          ON_ENTER    ON_LOOP  ON_EXIT  EVT_START  EVT_STOP  EVT_UPDATE ELSE */
+    /*  IDLE */ ENT_IDLE, ATM_SLEEP,      -1,       RUN,       -1,         -1,  -1,
+    /*   RUN */  ENT_RUN, ATM_SLEEP,      -1,        -1,     IDLE,        RUN,  -1,
   };
   // clang-format on
   Machine::begin( state_table, ELSE );
@@ -42,6 +42,7 @@ Atm_mc_mixer& Atm_mc_mixer::config( int personality /* = CFG_QUADX */ ) {
 
 int Atm_mc_mixer::event( int id ) {
   switch ( id ) {
+    case EVT_UPDATE: return update;
   }
   return 0;
 }
@@ -63,6 +64,7 @@ void Atm_mc_mixer::action( int id ) {
       break;
     case ENT_RUN:
       update_outputs();
+      update = false;
       break;  
   }
 }
@@ -105,17 +107,18 @@ int Atm_mc_mixer::calculate_output( int output_ch ) {
 // Updates all output channels and optionally call the onChange() method
 
 void Atm_mc_mixer::update_outputs() {
-    for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
-      if ( output_channel[output_ch].enabled ) {
-        int new_value = calculate_output( output_ch );
-        if ( new_value != output_channel[output_ch].last_output ) {
-          output_channel[output_ch].last_output = new_value;
-          if ( output_channel[output_ch].min != -1 && output_channel[output_ch].max != -1 ) 
-            new_value = map( new_value , 0, 1000, output_channel[output_ch].min, output_channel[output_ch].max );
-          connectors[ON_CHANGE].push( new_value, output_ch ); 
-        }
+  for ( int output_ch = 0; output_ch < NO_OF_OUTPUT_CHANNELS; output_ch++ ) {
+    if ( output_channel[output_ch].enabled ) {
+      int new_value = calculate_output( output_ch );
+      if ( new_value != output_channel[output_ch].last_output ) {
+        output_channel[output_ch].last_output = new_value;
+        if ( output_channel[output_ch].min != -1 && output_channel[output_ch].max != -1 ) 
+          new_value = map( new_value , 0, 1000, output_channel[output_ch].min, output_channel[output_ch].max );
+          push( connectors, ON_CHANGE, 0, new_value, output_ch );
       }
     }
+  }
+  push( connectors, ON_UPDATE, 0, 0, 0 );
 }
 
 // Configures the output range for all output channels
@@ -160,7 +163,7 @@ Atm_mc_mixer& Atm_mc_mixer::set( int input_ch, int value ) {
   input_channel[input_ch].raw = value;
   value = constrain( value, 0, 1000 ); // document this!
   input_channel[input_ch].value = map( value, 0, 1000, input_channel[input_ch].min, input_channel[input_ch].max ); 
-  if ( state() ) update_outputs();
+  update = true;
   return *this;
 }
 
@@ -168,7 +171,7 @@ int Atm_mc_mixer::readInput( int input_ch, bool raw /* = false */ ) {
   return raw ? input_channel[input_ch].raw : input_channel[input_ch].value;
 }
 
-int16_t Atm_mc_mixer::readOutput( int output_ch ) {
+int Atm_mc_mixer::readOutput( int output_ch ) {
   return output_channel[output_ch].last_output;
 }
 
@@ -221,13 +224,23 @@ Atm_mc_mixer& Atm_mc_mixer::onChange( atm_cb_push_t callback, int idx ) {
   return *this;
 }
 
+Atm_mc_mixer& Atm_mc_mixer::onUpdate( Machine& machine, int event ) {
+  onPush( connectors, ON_CHANGE, 0, 1, 1, machine, event );
+  return *this;
+}
+
+Atm_mc_mixer& Atm_mc_mixer::onUpdate( atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_CHANGE, 0, 1, 1, callback, idx );
+  return *this;
+}
+
 /* State trace method
  * Sets the symbol table and the default logging method for serial monitoring
  */
 
 Atm_mc_mixer& Atm_mc_mixer::trace( Stream & stream ) {
   Machine::setTrace( &stream, atm_serial_debug::trace,
-    "FC_MIXER\0EVT_START\0EVT_STOP\0ELSE\0IDLE\0RUN" );
+    "FC_MIXER\0EVT_START\0EVT_STOP\0EVT_UPDATE\0ELSE\0IDLE\0RUN" );
   return *this;
 }
 
