@@ -60,7 +60,7 @@ void Atm_pid::action( int id ) {
     case ENT_SAMPLE:
       push( connectors, ON_SAMPLE, 0, 0, 0 ); 
       controlVariable = calculate( setPoint, processVariable );
-      push( connectors, ON_CHANGE, 0, controlVariable + output_offset, 0 ); 
+      push( connectors, ON_UPDATE, 0, controlVariable + output_offset, 0 ); 
       return;
   }
 }
@@ -94,7 +94,7 @@ Atm_pid& Atm_pid::sp( float setPoint ) { // TODO: While in HOLD ignore setPoint 
   } else {
     this->setPoint = setPoint;
     this->controlVariable = setPoint;
-    connectors[ON_CHANGE].push( setPoint, 0 ); // Open loop mode (CV = SP)
+    connectors[ON_UPDATE].push( setPoint, 0 ); // Open loop mode (CV = SP)
   }
   return *this;
 }
@@ -113,7 +113,7 @@ Atm_pid& Atm_pid::pv( float processVariable ) {
 //    Serial.print( " =");
 //    Serial.println( this->controlVariable );
 //    if ( controlVariable != last_cv ) {
-      push( connectors, ON_CHANGE, 0, controlVariable + output_offset, 0 ); 
+      push( connectors, ON_UPDATE, 0, controlVariable + output_offset, 0 ); 
       last_cv = controlVariable;
 //    }
   }
@@ -211,13 +211,13 @@ Atm_pid& Atm_pid::stop() {
  * onChange() push connector variants ( slots 1, autostore 0, broadcast 0 )
  */
 
-Atm_pid& Atm_pid::onChange( Machine& machine, int event ) {
-  onPush( connectors, ON_CHANGE, 0, 1, 1, machine, event );
+Atm_pid& Atm_pid::onUpdate( Machine& machine, int event ) {
+  onPush( connectors, ON_UPDATE, 0, 1, 1, machine, event );
   return *this;
 }
 
-Atm_pid& Atm_pid::onChange( atm_cb_push_t callback, int idx ) {
-  onPush( connectors, ON_CHANGE, 0, 1, 1, callback, idx );
+Atm_pid& Atm_pid::onUpdate( atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_UPDATE, 0, 1, 1, callback, idx );
   return *this;
 }
 

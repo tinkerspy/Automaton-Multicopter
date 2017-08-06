@@ -21,8 +21,8 @@ class Atm_pid: public Machine {
   Atm_pid& trace( Stream & stream );
   Atm_pid& trigger( int event );
   int state( void );
-  Atm_pid& onChange( Machine& machine, int event = 0 );
-  Atm_pid& onChange( atm_cb_push_t callback, int idx = 0 );
+  Atm_pid& onUpdate( Machine& machine, int event = 0 );
+  Atm_pid& onUpdate( atm_cb_push_t callback, int idx = 0 );
   Atm_pid& onSample( Machine& machine, int event = 0 );
   Atm_pid& onSample( atm_cb_push_t callback, int idx = 0 );
   Atm_pid& start( void );
@@ -43,11 +43,10 @@ class Atm_pid: public Machine {
   float Kd( void );
   float windup( void );
   Atm_pid& reset();
-
   
  private:
   enum { ENT_SAMPLE, ENT_CHANGED }; // ACTIONS
-  enum { ON_CHANGE, ON_SAMPLE, CONN_MAX }; // CONNECTORS
+  enum { ON_UPDATE, ON_SAMPLE, CONN_MAX }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
   int event( int id ); 
   void action( int id ); 
@@ -60,45 +59,4 @@ class Atm_pid: public Machine {
   uint32_t last_calculation;
 
 };
-
-/*
-Automaton::ATML::begin - Automaton Markup Language
-
-<?xml version="1.0" encoding="UTF-8"?>
-<machines>
-  <machine name="Atm_pid">
-    <states>
-      <IDLE index="0" sleep="1">
-        <EVT_START>RUN</EVT_START>
-      </IDLE>
-      <RUN index="1">
-        <EVT_TIMER>SAMPLE</EVT_TIMER>
-        <EVT_STOP>IDLE</EVT_STOP>
-      </RUN>
-      <SAMPLE index="2" on_enter="ENT_SAMPLE">
-        <EVT_STOP>IDLE</EVT_STOP>
-        <EVT_CHANGED>CHANGED</EVT_CHANGED>
-        <ELSE>RUN</ELSE>
-      </SAMPLE>
-      <CHANGED index="3" on_enter="ENT_CHANGED">
-        <EVT_STOP>IDLE</EVT_STOP>
-      </CHANGED>
-    </states>
-    <events>
-      <EVT_TIMER index="0" access="PRIVATE"/>
-      <EVT_START index="1" access="PUBLIC"/>
-      <EVT_STOP index="2" access="PUBLIC"/>
-      <EVT_CHANGED index="3" access="MIXED"/>
-    </events>
-    <connectors>
-      <CHANGE autostore="0" broadcast="0" dir="PUSH" slots="1"/>
-      <SAMPLE autostore="0" broadcast="0" dir="PUSH" slots="1"/>
-    </connectors>
-    <methods>
-    </methods>
-  </machine>
-</machines>
-
-Automaton::ATML::end
-*/
 
