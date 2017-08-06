@@ -1,5 +1,6 @@
 #include "MPU6050jb.hpp"
 
+// Based on code from http://www.brokking.net/imu.html
 
 MPU6050jb::MPU6050jb( int addr ) {
   address = addr; 
@@ -59,7 +60,7 @@ bool MPU6050jb::sampleReady( void ) {
 
 void MPU6050jb::readSample( void ) {
   union { int16_t i; int8_t b[2]; } tmp[3];
-  tmp[0].b[0] = Wire.read();
+  tmp[0].b[0] = Wire.read(); // DO this like below if everything works
   tmp[0].b[1] = Wire.read();
   acc_x = tmp[0].i;
   tmp[1].b[0] = Wire.read();

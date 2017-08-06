@@ -1,5 +1,7 @@
 #pragma once
 
+// Based on code from http://www.brokking.net/imu.html
+
 #include "IMU.hpp"
 
 #ifdef __AVR_ATmega328P__

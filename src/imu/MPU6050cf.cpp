@@ -1,12 +1,12 @@
 #include "MPU6050cf.hpp"
 
+// Based on code from http://www.pitt.edu/~mpd41/Angle.ino
 
 MPU6050cf::MPU6050cf( int addr ) {
   address = addr; 
 }
 
 void MPU6050cf::init() {
-  
   Wire.begin();
   Wire.setClock(400000UL); // Set I2C frequency to 400kHz (500kHz or even 600kHz seems to work! (0.49/0.43/0.35 m/s data transfer)
  
