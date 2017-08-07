@@ -8,6 +8,7 @@ typedef struct {
     uint8_t pin;
     uint16_t value;
     uint16_t last_value;    
+    uint16_t last_output;    
     uint32_t last_high;
     uint16_t min, max;  // Save 2x6 bytes by changing into int8_t offsets from 1000/2000
     uint8_t sticky;
