@@ -272,6 +272,14 @@ Atm_mc_receiver& Atm_mc_receiver::sticky( int value ) {
   return *this;
 }
 
+Atm_mc_receiver& Atm_mc_receiver::calibrate( int min, int max ) {
+  for ( int ch = 0; ch < CHANNELS; ch++ ) {    
+    channel[physical[ch]].min = min;
+    channel[physical[ch]].max = max;
+  }
+  return *this;
+}
+
 Atm_mc_receiver& Atm_mc_receiver::calibrate( int lch, int min, int max ) {
   channel[physical[lch]].min = min;
   channel[physical[lch]].max = max;

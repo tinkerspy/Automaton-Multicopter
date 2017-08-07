@@ -45,6 +45,7 @@ class Atm_mc_receiver: public Machine {
   Atm_mc_receiver& sticky( int value );
   int minimum( int lch );
   int maximum( int lch );  
+  Atm_mc_receiver& calibrate( int min, int max );
   Atm_mc_receiver& calibrate( int idx, int min, int max );
 
   Atm_mc_receiver& onChange( Machine& machine, int event = 0 );
