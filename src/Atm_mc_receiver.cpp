@@ -213,7 +213,7 @@ Atm_mc_receiver& Atm_mc_receiver::mapping( int lch0, int lch1, int lch2, int lch
   return *this;
 }
 
-int Atm_mc_receiver::readOutput( int lch, bool raw /* = 0 */ ) {
+int Atm_mc_receiver::read( int lch, bool raw /* = 0 */ ) {
   int pch = physical[lch];
   if ( raw ) {
     return channel[pch].value;
