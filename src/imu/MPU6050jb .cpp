@@ -7,6 +7,7 @@ MPU6050jb::MPU6050jb( int addr ) {
 }
 
 void MPU6050jb::init( void ) {
+  Serial.println( "Connect to gyro" );
   Wire.begin();
     //Activate the MPU-6050
   Wire.beginTransmission(address);                                        //Start communicating with the MPU-6050
@@ -23,6 +24,7 @@ void MPU6050jb::init( void ) {
   Wire.write(0x1B);                                                    //Send the requested starting register
   Wire.write(0x08);                                                    //Set the requested starting register
   Wire.endTransmission();                                              //End the transmission
+  Serial.println( "Calibrating" );
 
   for (int cal_int = 0; cal_int < 2000 ; cal_int ++){                  //Run this code 2000 times
     requestSample();
@@ -37,6 +39,18 @@ void MPU6050jb::init( void ) {
   gyro_x_cal /= 2000;                                                  //Divide the gyro_x_cal variable by 2000 to get the avarage offset
   gyro_y_cal /= 2000;                                                  //Divide the gyro_y_cal variable by 2000 to get the avarage offset
   gyro_z_cal /= 2000;                                                  //Divide the gyro_z_cal variable by 2000 to get the avarage offset
+  Serial.print( "gyro_x_cal " );
+  Serial.println( gyro_x_cal );
+  Serial.print( "gyro_y_cal " );
+  Serial.println( gyro_y_cal );
+  Serial.print( "gyro_z_cal " );
+  Serial.println( gyro_z_cal );
+  Serial.print( "acc_x " );
+  Serial.println( acc_x );
+  Serial.print( "acc_y " );
+  Serial.println( acc_y );
+  Serial.print( "acc_z " );
+  Serial.println( acc_z );
 }
 
 bool MPU6050jb::lockChannel( bool lock ) { 
@@ -59,16 +73,9 @@ bool MPU6050jb::sampleReady( void ) {
 }
 
 void MPU6050jb::readSample( void ) {
-  union { int16_t i; int8_t b[2]; } tmp[3];
-  tmp[0].b[0] = Wire.read(); // DO this like below if everything works
-  tmp[0].b[1] = Wire.read();
-  acc_x = tmp[0].i;
-  tmp[1].b[0] = Wire.read();
-  tmp[1].b[1] = Wire.read();
-  acc_x = tmp[1].i;
-  tmp[2].b[0] = Wire.read();
-  tmp[2].b[1] = Wire.read();
-  acc_x = tmp[2].i;
+  acc_x = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_x variable
+  acc_y = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_y variable
+  acc_z = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_z variable
   temperature = Wire.read()<<8|Wire.read();                            //Add the low and high byte to the temperature variable
   gyro_x = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_x variable
   gyro_y = Wire.read()<<8|Wire.read();                                 //Add the low and high byte to the gyro_y variable
@@ -97,8 +104,8 @@ void MPU6050jb::computeAngles( void ) {
   angle_roll_acc = asin((float)acc_x/acc_total_vector)* -57.296;       //Calculate the roll angle
   
   //Place the MPU-6050 spirit level and note the values in the following two lines for calibration
-  angle_pitch_acc -= 0.0;                                              //Accelerometer calibration value for pitch
-  angle_roll_acc -= 0.0;                                               //Accelerometer calibration value for roll
+  angle_pitch_acc -= 2.10;                                              //Accelerometer calibration value for pitch
+  angle_roll_acc -= -0.83;                                               //Accelerometer calibration value for roll
 
   if(set_gyro_angles){                                                 //If the IMU is already started
     angle_pitch = angle_pitch * 0.9996 + angle_pitch_acc * 0.0004;     //Correct the drift of the gyro pitch angle with the accelerometer pitch angle
