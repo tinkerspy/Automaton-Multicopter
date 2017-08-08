@@ -71,7 +71,7 @@ class Atm_mc_receiver: public Machine {
   uint8_t volatile ppm_pulse_counter;
   uint32_t volatile ppm_last_pulse;
   uint8_t max_used_channel;
-  int physical[CHANNELS]; // make it a uint8_t???
+  int physical[CHANNELS]; // make it a uint8_t??? ( 6 bytes saved! )
   atm_timer_millis timer; // Wait for RC to stabilize
 #ifdef __AVR_ATmega328P__
   int_struct volatile int_state[3];
