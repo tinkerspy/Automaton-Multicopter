@@ -9,7 +9,7 @@ Atm_mc_mixer& Atm_mc_mixer::begin( int personality /* = CFG_QUADX */ ) {
   const static state_t state_table[] PROGMEM = {
     /*          ON_ENTER    ON_LOOP  ON_EXIT  EVT_START  EVT_STOP  EVT_UPDATE ELSE */
     /*  IDLE */ ENT_IDLE, ATM_SLEEP,      -1,       RUN,       -1,         -1,  -1,
-    /*   RUN */  ENT_RUN, ATM_SLEEP,      -1,        -1,     IDLE,        RUN,  -1,
+    /*   RUN */  ENT_RUN,        -1,      -1,        -1,     IDLE,        RUN,  -1,
   };
   // clang-format on
   Machine::begin( state_table, ELSE );
@@ -171,7 +171,7 @@ int Atm_mc_mixer::readInput( int input_ch, bool raw /* = false */ ) {
   return raw ? input_channel[input_ch].raw : input_channel[input_ch].value;
 }
 
-int Atm_mc_mixer::readOutput( int output_ch ) {
+int Atm_mc_mixer::read( int output_ch ) {
   return output_channel[output_ch].last_output;
 }
 
@@ -225,12 +225,12 @@ Atm_mc_mixer& Atm_mc_mixer::onChange( atm_cb_push_t callback, int idx ) {
 }
 
 Atm_mc_mixer& Atm_mc_mixer::onUpdate( Machine& machine, int event ) {
-  onPush( connectors, ON_CHANGE, 0, 1, 1, machine, event );
+  onPush( connectors, ON_UPDATE, 0, 1, 1, machine, event );
   return *this;
 }
 
 Atm_mc_mixer& Atm_mc_mixer::onUpdate( atm_cb_push_t callback, int idx ) {
-  onPush( connectors, ON_CHANGE, 0, 1, 1, callback, idx );
+  onPush( connectors, ON_UPDATE, 0, 1, 1, callback, idx );
   return *this;
 }
 

@@ -47,7 +47,7 @@ class Atm_mc_mixer: public Machine {
   Atm_mc_mixer& outputRange( int output_ch, int min, int max );
   Atm_mc_mixer& outputRange( int min, int max );
   Atm_mc_mixer& master( int input_ch );
-  int readOutput( int output_ch );
+  int read( int output_ch );
 
  private:
   enum { ENT_IDLE, ENT_RUN }; // ACTIONS
