@@ -29,10 +29,12 @@ class Atm_mc_accelgyro: public Machine {
   Atm_mc_accelgyro& onChange( int sub, atm_cb_push_t callback, int idx = 0 );
   Atm_mc_accelgyro& onUpdate( Machine& machine, int event = 0 );
   Atm_mc_accelgyro& onUpdate( atm_cb_push_t callback, int idx = 0 );
+  Atm_mc_accelgyro& onSample( Machine& machine, int event = 0 );
+  Atm_mc_accelgyro& onSample( atm_cb_push_t callback, int idx = 0 );
   Atm_mc_accelgyro& start( void );
   Atm_mc_accelgyro& stop( void );
 
-  int readOutput( int ypr );
+  int read( int ypr );
   Atm_mc_accelgyro& outputRange( int ypr, int toLow, int toHigh );
   Atm_mc_accelgyro& outputRange( int toLow, int toHigh );
   Atm_mc_accelgyro& angle( int ypr, int max_angle );
@@ -43,7 +45,7 @@ class Atm_mc_accelgyro: public Machine {
   
  private:
   enum { ENT_IDLE, ENT_RUN, ENT_SAMPLE, ENT_READING }; // ACTIONS
-  enum { ON_CHANGE, ON_UPDATE = 3, CONN_MAX }; // CONNECTORS
+  enum { ON_CHANGE, ON_UPDATE = 3, ON_SAMPLE, CONN_MAX }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
   int event( int id ); 
   void action( int id );

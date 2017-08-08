@@ -58,6 +58,7 @@ void Atm_mc_accelgyro::action( int id ) {
       return;
     case ENT_SAMPLE:
       if ( imu->sampleAvailable() ) {
+        push( connectors, ON_SAMPLE, 0, 0, 0 );
         imu->requestSample();
       }
       return;
@@ -68,10 +69,10 @@ void Atm_mc_accelgyro::action( int id ) {
       axis[0].value = imu->angleZ() * 100;
       axis[1].value = imu->angleX() * 100;
       axis[2].value = imu->angleY() * 100;
-      push( connectors, ON_UPDATE, 0, readOutput( PITCH ), readOutput( ROLL ) );
+      push( connectors, ON_UPDATE, 0, read( PITCH ), read( ROLL ) );
       for ( int ax = 0; ax < 3; ax++ ) {
         if ( axis[ax].value != axis[ax].last_value ) {
-          push( connectors, ON_CHANGE, ax, readOutput( ax ), 0 );
+          push( connectors, ON_CHANGE, ax, read( ax ), 0 );
           axis[ax].last_value = axis[ax].value;
         }
       }
@@ -136,7 +137,7 @@ int Atm_mc_accelgyro::state( void ) {
   return Machine::state();
 }
 
-int Atm_mc_accelgyro::readOutput( int ypr ) {
+int Atm_mc_accelgyro::read( int ypr ) {
   ypr = physical[ypr];
   int v = axis[ypr].value + axis[ypr].offset;
   if ( axis[ypr].reverse ) v = v * -1;
@@ -188,6 +189,16 @@ Atm_mc_accelgyro& Atm_mc_accelgyro::onChange( int sub, atm_cb_push_t callback, i
 /*
  * onUpdate() push connector variants ( slots 1, autostore 0, broadcast 0 )
  */
+
+Atm_mc_accelgyro& Atm_mc_accelgyro::onSample( Machine& machine, int event ) {
+  onPush( connectors, ON_SAMPLE, 0, 1, 1, machine, event );
+  return *this;
+}
+
+Atm_mc_accelgyro& Atm_mc_accelgyro::onSample( atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_SAMPLE, 0, 1, 1, callback, idx );
+  return *this;
+}
 
 Atm_mc_accelgyro& Atm_mc_accelgyro::onUpdate( Machine& machine, int event ) {
   onPush( connectors, ON_UPDATE, 0, 1, 1, machine, event );
