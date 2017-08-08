@@ -3,6 +3,7 @@
 #include <Automaton.h>
 
 #define CHANNELS 6
+#define DISCONNECT_THRESHOLD 10
 
 typedef struct {
     uint8_t pin;
@@ -26,7 +27,7 @@ class Atm_mc_receiver: public Machine {
 
  public:
   enum { IDLE, WAIT, PAUSE, RUN, CHANGED }; // STATES
-  enum { EVT_WAIT, EVT_TIMER,  EVT_START, EVT_STOP, EVT_TOGGLE, EVT_CHANGED, ELSE }; // EVENTS
+  enum { EVT_CONNECT, EVT_DISCONNECT, EVT_TIMER,  EVT_START, EVT_STOP, EVT_TOGGLE, EVT_CHANGED, ELSE }; // EVENTS
   Atm_mc_receiver( void ) : Machine() {};
   Atm_mc_receiver& begin(  int p0, int p1 = -1, int p2 = -1, int p3 = -1, int p4 = -1, int p5 = -1  );
   Atm_mc_receiver& trace( Stream & stream );
@@ -48,6 +49,9 @@ class Atm_mc_receiver: public Machine {
   Atm_mc_receiver& calibrate( int min, int max );
   Atm_mc_receiver& calibrate( int idx, int min, int max );
 
+  Atm_mc_receiver& onConnect( Machine& machine, int event = 0 );
+  Atm_mc_receiver& onConnect( atm_cb_push_t callback, int idx = 0 );
+
   Atm_mc_receiver& onChange( Machine& machine, int event = 0 );
   Atm_mc_receiver& onChange( atm_cb_push_t callback, int idx = 0 );
   Atm_mc_receiver& onChange( int sub, Machine& machine, int event = 0 );
@@ -58,8 +62,8 @@ class Atm_mc_receiver: public Machine {
   void register_pin_change_pwm( byte int_no, byte int_mask, byte bits );
   
  private:
-  enum { ENT_CHANGED }; // ACTIONS
-  enum { ON_CHANGE, CONN_MAX = CHANNELS }; // CONNECTORS
+  enum { ENT_CHANGED, EXT_WAIT, ENT_WAIT }; // ACTIONS
+  enum { ON_CONNECT, ON_CHANGE, CONN_MAX = CHANNELS + 1 }; // CONNECTORS
   atm_connector connectors[CONN_MAX];
 
   int event( int id ); 
@@ -73,6 +77,7 @@ class Atm_mc_receiver: public Machine {
   uint8_t max_used_channel;
   int physical[CHANNELS]; // make it a uint8_t??? ( 6 bytes saved! )
   atm_timer_millis timer; // Wait for RC to stabilize
+  uint8_t connect_cnt, disconnect_countdown;
 #ifdef __AVR_ATmega328P__
   int_struct volatile int_state[3];
 #endif

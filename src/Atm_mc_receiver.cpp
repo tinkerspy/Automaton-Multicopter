@@ -8,17 +8,16 @@
 // TODO: After turning off the transmitter, the object should stop sending updates (?) read should return -1???
 // onConnect handler (state connect/disconnect)???
 
-// TODO: onChange() triggert te vaak, toch filteren op raw & cooked1
 
 Atm_mc_receiver& Atm_mc_receiver::begin( int p0, int p1, int p2, int p3, int p4, int p5 ) {
   // clang-format off
   const static state_t state_table[] PROGMEM = {
-    /*                ON_ENTER    ON_LOOP      ON_EXIT  EVT_WAIT EVT_TIMER  EVT_START EVT_STOP EVT_TOGGLE EVT_CHANGED ELSE */
-    /*  IDLE    */          -1, ATM_SLEEP,          -1,       -1,       -1,     WAIT,      -1,       RUN,         -1,  -1,
-    /*  WAIT    */          -1,        -1,          -1,    PAUSE,       -1,       -1,    IDLE,      IDLE,         -1,  -1,
-    /*  PAUSE   */          -1,        -1, ENT_CHANGED,       -1,      RUN,       -1,    IDLE,      IDLE,         -1,  -1,
-    /*  RUN     */          -1,        -1,          -1,       -1,       -1,       -1,    IDLE,      IDLE,    CHANGED,  -1,
-    /*  CHANGED */ ENT_CHANGED,        -1,          -1,       -1,       -1,       -1,    IDLE,      IDLE,         -1, RUN,
+    /*                ON_ENTER    ON_LOOP      ON_EXIT  EVT_CONNECT  EVT_DISCONNECT EVT_TIMER  EVT_START EVT_STOP EVT_TOGGLE EVT_CHANGED ELSE */
+    /*  IDLE    */          -1, ATM_SLEEP,          -1,          -1,             -1,       -1,     WAIT,      -1,       RUN,         -1,  -1,
+    /*  WAIT    */    ENT_WAIT,        -1,    EXT_WAIT,       PAUSE,             -1,       -1,       -1,    IDLE,      IDLE,         -1,  -1,
+    /*  PAUSE   */          -1,        -1, ENT_CHANGED,          -1,             -1,      RUN,       -1,    IDLE,      IDLE,         -1,  -1,
+    /*  RUN     */          -1,        -1,          -1,          -1,           WAIT,       -1,       -1,    IDLE,      IDLE,    CHANGED,  -1,
+    /*  CHANGED */ ENT_CHANGED,        -1,          -1,          -1,             -1,       -1,       -1,    IDLE,      IDLE,         -1, RUN,
   };
   // clang-format on
   Machine::begin( state_table, ELSE );
@@ -47,8 +46,30 @@ Atm_mc_receiver * Atm_mc_receiver::instance; // Only one instance allowed for no
 
 int Atm_mc_receiver::event( int id ) {
   switch ( id ) {
-    case EVT_WAIT:
+    case EVT_CONNECT:
       return channel[0].last_high > 0 || ppm_last_pulse > 0;
+    case EVT_DISCONNECT:      
+      if ( channel[0].last_high != 0 ) {
+        if ( ( micros() - channel[0].last_high ) > 1000000L ) {
+          if ( ++disconnect_countdown > DISCONNECT_THRESHOLD ) {
+            channel[0].last_high = 0;
+            return 1;          
+          } else {
+            return 0;          
+          }
+        }  
+      } else {
+        if ( micros() - ppm_last_pulse > 1000000L ) {
+          if ( ++disconnect_countdown > 5 ) {
+            ppm_last_pulse = 0;
+            return 1;
+          } else {
+            return 0;
+          }
+        }
+      }
+      disconnect_countdown = 0;
+      return 0;
     case EVT_TIMER:
       return timer.expired( this );
     case EVT_CHANGED:
@@ -82,6 +103,13 @@ void Atm_mc_receiver::action( int id ) {
         }        
       }    
       return;
+    case EXT_WAIT:    
+      push( connectors, ON_CONNECT, 0, 1, connect_cnt );
+      connect_cnt++;      
+      return;
+    case ENT_WAIT:
+      push( connectors, ON_CONNECT, 0, 0, connect_cnt );
+      return;    
   }
 }
 
@@ -344,6 +372,16 @@ int Atm_mc_receiver::state( void ) {
  * onChange() push connector variants ( slots 1, autostore 0, broadcast 0 )
  */
 
+Atm_mc_receiver& Atm_mc_receiver::onConnect( Machine& machine, int event ) {
+  onPush( connectors, ON_CONNECT, 0, 1, 1, machine, event );
+  return *this;
+}
+
+Atm_mc_receiver& Atm_mc_receiver::onConnect( atm_cb_push_t callback, int idx ) {
+  onPush( connectors, ON_CONNECT, 0, 1, 1, callback, idx );
+  return *this;
+}
+
  Atm_mc_receiver& Atm_mc_receiver::onChange( Machine& machine, int event ) {
   onPush( connectors, ON_CHANGE, 0, CHANNELS, 1, machine, event );
   return *this;
@@ -379,7 +417,7 @@ Atm_mc_receiver& Atm_mc_receiver::onChange( int sub, atm_cb_push_t callback, int
 
 Atm_mc_receiver& Atm_mc_receiver::trace( Stream & stream ) {
   Machine::setTrace( &stream, atm_serial_debug::trace,
-    "RC\0EVT_WAIT\0EVT_TIMER\0EVT_START\0EVT_STOP\0EVT_TOGGLE\0EVT_CHANGED\0ELSE\0IDLE\0WAIT\0PAUSE\0RUN\0CHANGED" );
+    "RC\0EVT_CONNECT\0EVT_DISCONNECT\0EVT_TIMER\0EVT_START\0EVT_STOP\0EVT_TOGGLE\0EVT_CHANGED\0ELSE\0IDLE\0WAIT\0PAUSE\0RUN\0CHANGED" );
   return *this;
 }
 
