@@ -7,7 +7,9 @@
 class IMU {
 
 public:
-  virtual void init( void ) = 0; // Kost dit een pointer per method???
+  virtual void init( int16_t sample_interval_us ) = 0; // Kost dit een pointer per method???
+  virtual void calibrate() = 0;
+  virtual bool calibrateDone() = 0;
   virtual bool lockChannel( bool lock ) = 0;
   virtual bool sampleAvailable( void ) = 0;
   virtual void requestSample( void ) = 0;

@@ -17,7 +17,7 @@ Atm_mc_accelgyro& Atm_mc_accelgyro::begin( IMU & imu, uint32_t sample_rate_us ) 
   Machine::begin( state_table, ELSE );
   microtimer_value = sample_rate_us;
   this->imu = &imu;
-  this->imu->init();
+  this->imu->init( sample_rate_us );
   inputMapping( YAW, PITCH, ROLL );
   outputRange( -90, +90 );
   return *this;          

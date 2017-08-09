@@ -14,7 +14,9 @@ class MPU6050jb : public IMU {
 
 public:
   MPU6050jb( int addr = 0x68 );
-  void init( void );
+  void init( int16_t sample_interval_us );
+  void calibrate();
+  bool calibrateDone();
   bool lockChannel( bool lock );
   bool sampleAvailable( void );
   void requestSample( void );

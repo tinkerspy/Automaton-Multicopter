@@ -6,7 +6,7 @@ MPU6050cf::MPU6050cf( int addr ) {
   address = addr; 
 }
 
-void MPU6050cf::init() {
+void MPU6050cf::init( int16_t sample_interval_us ) {
   Wire.begin();
   Wire.setClock(400000UL); // Set I2C frequency to 400kHz (500kHz or even 600kHz seems to work! (0.49/0.43/0.35 m/s data transfer)
  
@@ -40,6 +40,13 @@ void MPU6050cf::init() {
 
   //start the timer
   timer = micros();
+}
+
+void MPU6050cf::calibrate( void ) {
+  
+}
+bool MPU6050cf::calibrateDone( void ) {
+  return true;
 }
 
 bool MPU6050cf::lockChannel( bool lock ) { 

@@ -6,7 +6,7 @@ MPU6050jb::MPU6050jb( int addr ) {
   address = addr; 
 }
 
-void MPU6050jb::init( void ) {
+void MPU6050jb::init( int16_t sample_interval_us ) {
   Serial.println( "Connect to gyro" );
   Wire.begin();
     //Activate the MPU-6050
@@ -51,6 +51,14 @@ void MPU6050jb::init( void ) {
   Serial.println( acc_y );
   Serial.print( "acc_z " );
   Serial.println( acc_z );
+}
+
+void MPU6050jb::calibrate( void ) {
+  
+}
+
+bool MPU6050jb::calibrateDone( void ) {
+  return true;
 }
 
 bool MPU6050jb::lockChannel( bool lock ) { 
